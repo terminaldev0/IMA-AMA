@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Machine Calculator (IMA, AMA, Efficiency)</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for aesthetic */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .input-group label {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 flex justify-center items-start min-h-screen">
+
+    <div id="calculator-app" class="w-full max-w-4xl">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-800">Simple Machine Analysis</h1>
+            <p class="text-lg text-gray-600 mt-2">
+                Calculate $F_e, D_e, F_r, D_r$, IMA, AMA, and Efficiency.
+            </p>
+            <p class="text-sm text-gray-500 mt-1">
+                Enter **exactly four** values out of the five available to solve for the missing one.
+            </p>
+        </header>
+
+        <div class="grid lg:grid-cols-2 gap-8">
+
+            <!-- Input Card: Primary Variables -->
+            <div class="card bg-white p-6 rounded-xl border border-gray-200">
+                <h2 class="text-xl font-semibold mb-6 text-gray-700">1. Input Variables (4 out of 5 required)</h2>
+                <div id="input-fields" class="grid grid-cols-2 gap-6">
+
+                    <!-- Fe (Effort Force) -->
+                    <div class="input-group">
+                        <label for="Fe" class="block text-sm text-gray-700">Effort Force ($F_e$)</label>
+                        <input type="number" id="Fe" placeholder="e.g. 50" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                        <p class="text-xs text-gray-500 mt-1">Unit: Force (N/lb)</p>
+                    </div>
+
+                    <!-- De (Effort Distance) -->
+                    <div class="input-group">
+                        <label for="De" class="block text-sm text-gray-700">Effort Distance ($D_e$)</label>
+                        <input type="number" id="De" placeholder="e.g. 2.5" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                        <p class="text-xs text-gray-500 mt-1">Unit: Distance (m/ft)</p>
+                    </div>
+
+                    <!-- Fr (Resistance Force / Load) -->
+                    <div class="input-group">
+                        <label for="Fr" class="block text-sm text-gray-700">Resistance Force ($F_r$)</label>
+                        <input type="number" id="Fr" placeholder="e.g. 150" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                        <p class="text-xs text-gray-500 mt-1">Unit: Force (N/lb)</p>
+                    </div>
+
+                    <!-- Dr (Resistance Distance) -->
+                    <div class="input-group">
+                        <label for="Dr" class="block text-sm text-gray-700">Resistance Distance ($D_r$)</label>
+                        <input type="number" id="Dr" placeholder="e.g. 0.5" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                        <p class="text-xs text-gray-500 mt-1">Unit: Distance (m/ft)</p>
+                    </div>
+                    
+                    <!-- New Input: Efficiency -->
+                    <div class="input-group col-span-2">
+                        <label for="Eff" class="block text-sm text-gray-700">Efficiency ($\eta$)</label>
+                        <input type="number" id="Eff" placeholder="e.g. 67 (for 67%)" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                        <p class="text-xs text-gray-500 mt-1">Unit: Percentage (0-100)</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex space-x-4">
+                    <button id="calculate-btn" class="flex-1 px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                        Calculate Results
+                    </button>
+                    <button id="clear-btn" class="px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition duration-200 focus:outline-none focus:ring-4 focus:ring-gray-400">
+                        Clear
+                    </button>
+                </div>
+                <div id="message-box" class="mt-4 p-3 rounded-lg text-sm text-red-700 bg-red-100 hidden" role="alert"></div>
+            </div>
+
+            <!-- Output Card: Results -->
+            <div class="card bg-white p-6 rounded-xl border border-gray-200">
+                <h2 class="text-xl font-semibold mb-6 text-gray-700">2. Calculated Results</h2>
+                <div id="output-fields" class="space-y-4">
+
+                    <!-- Missing Value Output -->
+                    <div id="missing-output" class="p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
+                        <p class="text-sm font-medium text-gray-800">Missing Variable ($X$): <span id="output-missing-name" class="font-bold text-yellow-700">N/A</span></p>
+                        <p class="text-lg font-bold text-yellow-700"><span id="output-missing-value">--</span></p>
+                    </div>
+
+                    <!-- IMA Output -->
+                    <div class="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+                        <p class="text-sm font-medium text-gray-800">Ideal Mechanical Advantage (IMA):</p>
+                        <p class="text-lg font-bold text-blue-700"><span id="output-IMA">--</span></p>
+                        <p class="text-xs text-gray-500 mt-1">Formula: $IMA = D_e / D_r$</p>
+                    </div>
+                    
+                    <!-- AMA Output -->
+                    <div class="p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
+                        <p class="text-sm font-medium text-gray-800">Actual Mechanical Advantage (AMA):</p>
+                        <p class="text-lg font-bold text-green-700"><span id="output-AMA">--</span></p>
+                        <p class="text-xs text-gray-500 mt-1">Formula: $AMA = F_r / F_e$</p>
+                    </div>
+
+                    <!-- Efficiency Output -->
+                    <div class="p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-lg">
+                        <p class="text-sm font-medium text-gray-800">Efficiency ($\eta$):</p>
+                        <p class="text-lg font-bold text-indigo-700"><span id="output-Efficiency">--</span></p>
+                        <p class="text-xs text-gray-500 mt-1">Formula: $\eta = (AMA / IMA) \times 100\%$</p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-10 text-center text-sm text-gray-500">
+            <p>Calculations rely on $AMA = F_r / F_e$, $IMA = D_e / D_r$, and $\eta = AMA / IMA$.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get all input and output elements, including the new Efficiency input
+            const inputs = {
+                Fe: document.getElementById('Fe'),
+                De: document.getElementById('De'),
+                Fr: document.getElementById('Fr'),
+                Dr: document.getElementById('Dr'),
+                Eff: document.getElementById('Eff'), // Efficiency input
+            };
+
+            const outputNames = {
+                Fe: 'Effort Force ($F_e$)',
+                De: 'Effort Distance ($D_e$)',
+                Fr: 'Resistance Force ($F_r$)',
+                Dr: 'Resistance Distance ($D_r$)',
+                Eff: 'Efficiency ($\eta$)',
+                AMA: 'Actual Mechanical Advantage (AMA)',
+                IMA: 'Ideal Mechanical Advantage (IMA)',
+            };
+
+            const outputs = {
+                missingName: document.getElementById('output-missing-name'),
+                missingValue: document.getElementById('output-missing-value'),
+                IMA: document.getElementById('output-IMA'),
+                AMA: document.getElementById('output-AMA'),
+                Efficiency: document.getElementById('output-Efficiency'),
+            };
+
+            const messageBox = document.getElementById('message-box');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const clearBtn = document.getElementById('clear-btn');
+
+            // Function to clear all outputs
+            const clearOutputs = () => {
+                outputs.missingName.textContent = 'N/A';
+                outputs.missingValue.textContent = '--';
+                outputs.IMA.textContent = '--';
+                outputs.AMA.textContent = '--';
+                outputs.Efficiency.textContent = '--';
+                messageBox.classList.add('hidden');
+                messageBox.textContent = '';
+            };
+
+            // Function to display an error message
+            const showMessage = (text, isError = true) => {
+                messageBox.textContent = text;
+                messageBox.classList.remove('hidden');
+                if (isError) {
+                    messageBox.classList.remove('bg-green-100', 'text-green-700');
+                    messageBox.classList.add('bg-red-100', 'text-red-700');
+                } else {
+                    messageBox.classList.remove('bg-red-100', 'text-red-700');
+                    messageBox.classList.add('bg-green-100', 'text-green-700');
+                }
+            };
+
+            // Main calculation function
+            const calculate = () => {
+                clearOutputs(); // Clear previous messages and results
+
+                // 1. Collect and validate input values
+                const rawValues = {
+                    Fe: parseFloat(inputs.Fe.value),
+                    De: parseFloat(inputs.De.value),
+                    Fr: parseFloat(inputs.Fr.value),
+                    Dr: parseFloat(inputs.Dr.value),
+                    Eff: parseFloat(inputs.Eff.value), // Efficiency in percentage (0-100)
+                };
+
+                const allVars = Object.keys(rawValues);
+                const definedVariables = allVars.filter(key => !isNaN(rawValues[key]) && rawValues[key] !== null);
+                const missingVariable = allVars.find(key => isNaN(rawValues[key]) || rawValues[key] === null);
+
+                if (definedVariables.length !== 4) {
+                    showMessage('Please enter **exactly four** of the five available values ($F_e, D_e, F_r, D_r, \eta$). You entered ' + definedVariables.length + '.');
+                    return;
+                }
+                
+                // Efficiency check
+                if (rawValues.Eff > 100 || rawValues.Eff < 0) {
+                    showMessage('Efficiency ($\eta$) must be between 0 and 100.', true);
+                    return;
+                }
+                
+                let calculatedValue = NaN;
+                let AMA = NaN;
+                let IMA = NaN;
+                const v = rawValues; // Shorthand for values
+                
+                try {
+                    // --- STEP 2: Solve for Missing Variable using available formulas ---
+
+                    // A. Calculate IMA (requires D_e and D_r)
+                    if (!isNaN(v.De) && !isNaN(v.Dr)) {
+                        if (v.Dr === 0) {
+                            IMA = Infinity;
+                        } else {
+                            IMA = v.De / v.Dr;
+                        }
+                    }
+
+                    // B. Calculate AMA (requires F_r and F_e)
+                    if (!isNaN(v.Fr) && !isNaN(v.Fe)) {
+                        if (v.Fe === 0) {
+                            AMA = Infinity;
+                        } else {
+                            AMA = v.Fr / v.Fe;
+                        }
+                    }
+
+                    // C. Solve for the Missing Variable (if it's one of the 5 inputs)
+                    if (missingVariable === 'Eff') {
+                        // Case 1: Solve for Efficiency (requires AMA and IMA)
+                        if (!isNaN(AMA) && !isNaN(IMA) && IMA !== Infinity && IMA !== 0) {
+                            calculatedValue = (AMA / IMA) * 100;
+                        } else {
+                            throw new Error('To calculate Efficiency, $F_e, D_e, F_r, D_r$ must be provided, and IMA cannot be zero or infinite.');
+                        }
+                    } else if (missingVariable === 'Fe' || missingVariable === 'Fr') {
+                        // Case 2: Solve for a Force (requires Efficiency, IMA, and the other force)
+                        if (!isNaN(v.Eff) && !isNaN(IMA) && IMA !== Infinity && IMA !== 0) {
+                            // Calculate AMA from Efficiency and IMA
+                            AMA = (v.Eff / 100) * IMA;
+                            
+                            if (missingVariable === 'Fe') {
+                                // Solve for Fe: Fe = Fr / AMA
+                                if (AMA === 0) throw new Error('Cannot solve $F_e$: Calculated AMA is zero. Check your efficiency or distance values.');
+                                calculatedValue = v.Fr / AMA;
+                                v.Fe = calculatedValue; // Update Fe for final AMA calculation
+                            } else { // missingVariable === 'Fr'
+                                // Solve for Fr: Fr = Fe * AMA
+                                calculatedValue = v.Fe * AMA;
+                                v.Fr = calculatedValue; // Update Fr for final AMA calculation
+                            }
+                        } else if (!isNaN(v.De) && !isNaN(v.Dr) && !isNaN(v.Fe) && !isNaN(v.Fr)) {
+                            // Secondary check: if all 4 primary are somehow defined, use Work principle (This scenario shouldn't be possible with the 4 out of 5 rule, but included for robustness)
+                            if (missingVariable === 'Fe') {
+                                if (v.De === 0) throw new Error('Cannot solve $F_e$: Effort Distance ($D_e$) cannot be zero.');
+                                calculatedValue = (v.Fr * v.Dr) / v.De;
+                                v.Fe = calculatedValue;
+                            } else { // missingVariable === 'Fr'
+                                if (v.Dr === 0) throw new Error('Cannot solve $F_r$: Resistance Distance ($D_r$) cannot be zero.');
+                                calculatedValue = (v.Fe * v.De) / v.Dr;
+                                v.Fr = calculatedValue;
+                            }
+                        } else {
+                             throw new Error('To solve for Force ($F_e$ or $F_r$), you need Efficiency ($\eta$), $D_e$, $D_r$, and the other Force.');
+                        }
+                    } else if (missingVariable === 'De' || missingVariable === 'Dr') {
+                         // Case 3: Solve for a Distance (requires Efficiency, AMA, and the other distance)
+                        if (!isNaN(v.Eff) && !isNaN(AMA) && AMA !== Infinity) {
+                            // Calculate IMA from Efficiency and AMA
+                            if (v.Eff === 0) throw new Error('Cannot solve Distance: Efficiency ($\eta$) cannot be zero.');
+                            IMA = AMA / (v.Eff / 100);
+
+                            if (missingVariable === 'De') {
+                                // Solve for De: De = IMA * Dr
+                                calculatedValue = IMA * v.Dr;
+                                v.De = calculatedValue; // Update De for final IMA calculation
+                            } else { // missingVariable === 'Dr'
+                                // Solve for Dr: Dr = De / IMA
+                                if (IMA === 0) throw new Error('Cannot solve $D_r$: Calculated IMA is zero. Check your efficiency or force values.');
+                                calculatedValue = v.De / IMA;
+                                v.Dr = calculatedValue; // Update Dr for final IMA calculation
+                            }
+                        } else if (!isNaN(v.Fe) && !isNaN(v.Fr)) {
+                            // Secondary check: if all 4 primary are somehow defined, use Work principle (Shouldn't happen with 4 out of 5 rule)
+                            if (missingVariable === 'De') {
+                                if (v.Fe === 0) throw new Error('Cannot solve $D_e$: Effort Force ($F_e$) cannot be zero.');
+                                calculatedValue = (v.Fr * v.Dr) / v.Fe;
+                                v.De = calculatedValue;
+                            } else { // missingVariable === 'Dr'
+                                if (v.Fr === 0) throw new Error('Cannot solve $D_r$: Resistance Force ($F_r$) cannot be zero.');
+                                calculatedValue = (v.Fe * v.De) / v.Fr;
+                                v.Dr = calculatedValue;
+                            }
+                        } else {
+                            throw new Error('To solve for Distance ($D_e$ or $D_r$), you need Efficiency ($\eta$), $F_e$, $F_r$, and the other Distance.');
+                        }
+                    }
+
+                    // --- STEP 3: Final Calculations for Output Fields ---
+
+                    // Calculate AMA/IMA again using the calculated variable (v.Fe, v.De, etc. are now updated)
+                    
+                    // Final IMA
+                    if (!isNaN(v.De) && !isNaN(v.Dr)) {
+                        outputs.IMA.textContent = v.Dr === 0 ? 'Infinite' : (v.De / v.Dr).toFixed(4);
+                    } else {
+                        outputs.IMA.textContent = '--';
+                    }
+
+                    // Final AMA
+                    if (!isNaN(v.Fr) && !isNaN(v.Fe)) {
+                        outputs.AMA.textContent = v.Fe === 0 ? 'Infinite' : (v.Fr / v.Fe).toFixed(4);
+                    } else {
+                        outputs.AMA.textContent = '--';
+                    }
+
+                    // Final Efficiency
+                    const finalIMA = parseFloat(outputs.IMA.textContent) || IMA;
+                    const finalAMA = parseFloat(outputs.AMA.textContent) || AMA;
+                    
+                    if (!isNaN(finalAMA) && !isNaN(finalIMA) && finalIMA > 0 && finalIMA !== Infinity) {
+                        outputs.Efficiency.textContent = ((finalAMA / finalIMA) * 100).toFixed(2) + ' %';
+                    } else if (missingVariable === 'Eff' && !isNaN(calculatedValue)) {
+                        outputs.Efficiency.textContent = calculatedValue.toFixed(2) + ' %';
+                    } else {
+                         outputs.Efficiency.textContent = '--';
+                    }
+
+                    // 4. Display the missing variable result
+                    outputs.missingName.textContent = outputNames[missingVariable];
+                    outputs.missingValue.textContent = calculatedValue.toFixed(4);
+                    
+                    if (missingVariable === 'Eff' && calculatedValue > 100) {
+                         showMessage(`Warning: Calculated efficiency is ${calculatedValue.toFixed(2)}%. An efficiency greater than 100% indicates that the ideal work principle ($W_{in} \ge W_{out}$) was violated by the input forces/distances.`, false);
+                    } else if (missingVariable !== 'Eff' && !isNaN(v.Eff)) {
+                        // If we used the input efficiency, show the result without a warning
+                         showMessage(`Calculation successful using the input efficiency ($\eta = ${v.Eff} \%$).`, false);
+                    }
+
+                } catch (e) {
+                    showMessage('Calculation Error: ' + e.message);
+                    return;
+                }
+            };
+
+            // Event Listeners
+            calculateBtn.addEventListener('click', calculate);
+            clearBtn.addEventListener('click', () => {
+                // Clear inputs and outputs
+                Object.values(inputs).forEach(input => input.value = '');
+                clearOutputs();
+            });
+        });
+    </script>
+</body>
+</html>
