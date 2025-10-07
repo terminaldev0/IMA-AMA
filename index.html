@@ -3,931 +3,1195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Calculator Hub</title>
+    <title>engineering tools by Terminal_Dev</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide icons for aesthetics -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Custom styles for aesthetic */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f9fb;
+        /* Apply the Inter font globally */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        .card {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
+        /* Style for LaTeX/formula display */
+        .formula-text { 
+            font-family: 'Times New Roman', serif; 
+            font-style: italic; 
+            font-weight: bold; 
         }
-        .input-group label {
-            font-weight: 500;
-        }
-        /* Custom styles for tabs */
-        .tab {
-            padding: 10px 15px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            font-weight: 500;
-            color: #4b5563; /* gray-600 */
-            white-space: nowrap;
-        }
-        .tab.active {
-            border-bottom-color: #3b82f6; /* blue-500 */
-            color: #1e40af; /* blue-800 */
-            font-weight: 600;
-        }
-        #calculator-tabs {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            justify-content: flex-start;
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background-color: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background-color: #1f2937; }
+        /* Canvas fix for responsiveness */
+        #graphing-canvas { 
+            width: 100%; 
+            height: 400px; 
         }
     </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
 </head>
-<body class="p-4 sm:p-8 flex justify-center items-start min-h-screen">
+<body class="bg-gray-900 text-white min-h-screen">
 
-    <div id="calculator-app" class="w-full max-w-5xl">
-        
-        <!-- ============================================== -->
-        <!-- 1. HOME SCREEN (Visible by default) -->
-        <!-- ============================================== -->
-        <div id="home-view" class="active-view">
-            <header class="text-center mb-12">
-                <h1 class="text-4xl sm:text-5xl font-extrabold text-blue-800 mb-2">Physics Tools Hub</h1>
-                <p class="text-xl text-gray-600">Select a calculator to begin.</p>
-            </header>
-
-            <div class="grid md:grid-cols-2 gap-8">
-                
-                <!-- Simple Machine Calculator Card -->
-                <div id="select-simple-machine" class="card bg-white p-8 rounded-xl border border-blue-200 cursor-pointer hover:shadow-xl hover:bg-blue-50 transition duration-300 transform hover:scale-[1.02]">
-                    <div class="flex items-center space-x-4">
-                        <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                        <div>
-                            <h2 class="text-2xl font-bold text-blue-800">Simple Machine Analysis</h2>
-                            <p class="text-gray-600">Analyze the IMA, AMA, and Efficiency of the six simple machines.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Placeholder for another calculator -->
-                <div class="card bg-gray-100 p-8 rounded-xl border border-gray-300 opacity-60">
-                    <div class="flex items-center space-x-4">
-                         <svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c1.657 0 3 .895 3 2s-1.343 2-3 2h-1a2 2 0 00-2 2v1m-4 1h5.5M15 4a6 6 0 00-6 6v3h2a3 3 0 110 6h-3M3 12l3-3m0 0l-3-3m3 3h12"></path>
-                        </svg>
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-700">Kinematics Calculator (Coming Soon)</h2>
-                            <p class="text-gray-500">Solve $v, d, a, t$ equations.</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ============================================== -->
-        <!-- 2. SIMPLE MACHINE CALCULATOR VIEW (Hidden initially) -->
-        <!-- ============================================== -->
-        <div id="simple-machine-calculator-view" class="hidden">
-            
-            <!-- Back Button -->
-            <button id="back-to-home-btn" class="mb-6 px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition duration-200 flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                Back to Home
-            </button>
-            
-            <header class="text-center mb-6">
-                <h1 class="text-3xl sm:text-4xl font-extrabold text-blue-800">Simple Machine Analysis Hub</h1>
-                <p class="text-lg text-gray-600 mt-2">
-                    Calculate IMA, AMA, and Efficiency ($\eta$) for specific machines.
-                </p>
-            </header>
-            
-            <!-- Tab Navigation -->
-            <div id="calculator-tabs" class="flex border-b border-gray-300 mb-6">
-                <div class="tab active" data-tab="general">General Solver</div>
-                <div class="tab" data-tab="lever">Lever</div>
-                <div class="tab" data-tab="wheel-axle">Wheel & Axle</div>
-                <div class="tab" data-tab="pulley">Pulley</div>
-                <div class="tab" data-tab="inclined-plane">Inclined Plane</div>
-                <div class="tab" data-tab="wedge">Wedge</div>
-                <div class="tab" data-tab="screw">Screw</div>
-            </div>
-
-            <!-- Tab Content Containers -->
-            <div id="tab-content" class="bg-white p-6 rounded-xl card border border-gray-200">
-                
-                <!-- Helper for machine-specific tabs -->
-                <div class="machine-message-box p-3 rounded-lg text-sm hidden mb-4" role="alert"></div>
-
-                <!-- 1. GENERAL ANALYSIS (The 5-Variable Solver) -->
-                <div id="content-general" class="tab-pane active-pane">
-                    <p class="text-sm text-gray-500 mb-4 p-2 rounded-lg bg-gray-100">
-                        Enter **exactly four** of the five primary variables ($F_e, D_e, F_r, D_r, \eta$) to solve for the missing one.
-                    </p>
-                    <div class="grid lg:grid-cols-2 gap-8">
-                        <!-- General Input Fields -->
-                        <div id="general-inputs" class="grid grid-cols-2 gap-6">
-                            <!-- Fe -->
-                            <div class="input-group">
-                                <label for="Fe_gen" class="block text-sm text-gray-700">Effort Force ($F_e$)</label>
-                                <input type="number" id="Fe_gen" placeholder="e.g. 50" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force (N/lb)</p>
-                            </div>
-                            <!-- De -->
-                            <div class="input-group">
-                                <label for="De_gen" class="block text-sm text-gray-700">Effort Distance ($D_e$)</label>
-                                <input type="number" id="De_gen" placeholder="e.g. 2.5" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance (m/ft)</p>
-                            </div>
-                            <!-- Fr -->
-                            <div class="input-group">
-                                <label for="Fr_gen" class="block text-sm text-gray-700">Resistance Force ($F_r$)</label>
-                                <input type="number" id="Fr_gen" placeholder="e.g. 150" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force (N/lb)</p>
-                            </div>
-                            <!-- Dr -->
-                            <div class="input-group">
-                                <label for="Dr_gen" class="block text-sm text-gray-700">Resistance Distance ($D_r$)</label>
-                                <input type="number" id="Dr_gen" placeholder="e.g. 0.5" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance (m/ft)</p>
-                            </div>
-                            <!-- Efficiency -->
-                            <div class="input-group col-span-2">
-                                <label for="Eff_gen" class="block text-sm text-gray-700">Efficiency ($\eta$)</label>
-                                <input type="number" id="Eff_gen" placeholder="e.g. 67 (for 67%)" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Percentage (0-100)</p>
-                            </div>
-                        </div>
-
-                        <!-- General Output Fields -->
-                        <div id="general-outputs">
-                            <h2 class="text-xl font-semibold mb-6 text-gray-700">2. Calculated Results</h2>
-                            <div class="space-y-4">
-                                <!-- Missing Value Output -->
-                                <div class="p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
-                                    <p class="text-sm font-medium text-gray-800">Missing Variable ($X$): <span id="output-missing-name-gen" class="font-bold text-yellow-700">N/A</span></p>
-                                    <p class="text-lg font-bold text-yellow-700"><span id="output-missing-value-gen">--</span></p>
-                                </div>
-                                <!-- IMA Output -->
-                                <div class="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
-                                    <p class="text-sm font-medium text-gray-800">Ideal Mechanical Advantage (IMA):</p>
-                                    <p class="text-lg font-bold text-blue-700"><span id="output-IMA-gen">--</span></p>
-                                    <p class="text-xs text-gray-500 mt-1">Formula: $IMA = D_e / D_r$</p>
-                                </div>
-                                <!-- AMA Output -->
-                                <div class="p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
-                                    <p class="text-sm font-medium text-gray-800">Actual Mechanical Advantage (AMA):</p>
-                                    <p class="text-lg font-bold text-green-700"><span id="output-AMA-gen">--</span></p>
-                                    <p class="text-xs text-gray-500 mt-1">Formula: $AMA = F_r / F_e$</p>
-                                </div>
-                                <!-- Efficiency Output -->
-                                <div class="p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-lg">
-                                    <p class="text-sm font-medium text-gray-800">Efficiency ($\eta$):</p>
-                                    <p class="text-lg font-bold text-indigo-700"><span id="output-Efficiency-gen">--</span></p>
-                                    <p class="text-xs text-gray-500 mt-1">Formula: $\eta = (AMA / IMA) \times 100\%$</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-8 flex space-x-4">
-                        <button id="calculate-btn-gen" class="flex-1 px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300">
-                            Calculate Results
-                        </button>
-                        <button id="clear-btn-gen" class="px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition duration-200 focus:outline-none focus:ring-4 focus:ring-gray-400">
-                            Clear
-                        </button>
-                    </div>
-                    <div id="message-box-gen" class="mt-4 p-3 rounded-lg text-sm text-red-700 bg-red-100 hidden" role="alert"></div>
-                </div>
-
-                <!-- 2. LEVER CALCULATOR -->
-                <div id="content-lever" class="tab-pane hidden">
-                    <h3 class="text-xl font-bold text-blue-700 mb-4">Lever Analysis (IMA: $L_e / L_r$)</h3>
-                    <div class="grid lg:grid-cols-2 gap-8">
-                        <div class="grid grid-cols-2 gap-6 machine-inputs" data-machine="lever">
-                            <!-- IMA Specific Inputs -->
-                            <div class="input-group">
-                                <label for="De_lev" class="block text-sm text-gray-700">Effort Arm Length ($L_e$)</label>
-                                <input type="number" id="De_lev" placeholder="e.g. 5" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance</p>
-                            </div>
-                            <div class="input-group">
-                                <label for="Dr_lev" class="block text-sm text-gray-700">Resistance Arm Length ($L_r$)</label>
-                                <input type="number" id="Dr_lev" placeholder="e.g. 1" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance</p>
-                            </div>
-                            <!-- AMA/Effort Inputs (3, one must be empty) -->
-                            <div class="input-group">
-                                <label for="Fe_lev" class="block text-sm text-gray-700">Effort Force ($F_e$)</label>
-                                <input type="number" id="Fe_lev" placeholder="e.g. 200" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group">
-                                <label for="Fr_lev" class="block text-sm text-gray-700">Resistance Force ($F_r$)</label>
-                                <input type="number" id="Fr_lev" placeholder="e.g. 800" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group col-span-2">
-                                <label for="Eff_lev" class="block text-sm text-gray-700">Efficiency ($\eta$)</label>
-                                <input type="number" id="Eff_lev" placeholder="e.g. 80 (for 80%)" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Percentage (0-100)</p>
-                            </div>
-                        </div>
-                        <div id="lever-outputs"></div>
-                    </div>
-                </div>
-
-                <!-- 3. WHEEL & AXLE CALCULATOR -->
-                <div id="content-wheel-axle" class="tab-pane hidden">
-                    <h3 class="text-xl font-bold text-blue-700 mb-4">Wheel & Axle Analysis (IMA: $R_{wheel} / R_{axle}$)</h3>
-                    <div class="grid lg:grid-cols-2 gap-8">
-                        <div class="grid grid-cols-2 gap-6 machine-inputs" data-machine="wheel-axle">
-                            <!-- IMA Specific Inputs -->
-                            <div class="input-group">
-                                <label for="De_wa" class="block text-sm text-gray-700">Radius of Wheel ($R_{wheel}$)</label>
-                                <input type="number" id="De_wa" placeholder="e.g. 0.5" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance (m/cm)</p>
-                            </div>
-                            <div class="input-group">
-                                <label for="Dr_wa" class="block text-sm text-gray-700">Radius of Axle ($R_{axle}$)</label>
-                                <input type="number" id="Dr_wa" placeholder="e.g. 0.1" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance (m/cm)</p>
-                            </div>
-                            <!-- AMA/Effort Inputs (3, one must be empty) -->
-                            <div class="input-group">
-                                <label for="Fe_wa" class="block text-sm text-gray-700">Effort Force ($F_e$)</label>
-                                <input type="number" id="Fe_wa" placeholder="e.g. 50" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group">
-                                <label for="Fr_wa" class="block text-sm text-gray-700">Resistance Force ($F_r$)</label>
-                                <input type="number" id="Fr_wa" placeholder="e.g. 200" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group col-span-2">
-                                <label for="Eff_wa" class="block text-sm text-gray-700">Efficiency ($\eta$)</label>
-                                <input type="number" id="Eff_wa" placeholder="e.g. 75" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Percentage (0-100)</p>
-                            </div>
-                        </div>
-                        <div id="wheel-axle-outputs"></div>
-                    </div>
-                </div>
-
-                <!-- 4. PULLEY CALCULATOR -->
-                <div id="content-pulley" class="tab-pane hidden">
-                    <h3 class="text-xl font-bold text-blue-700 mb-4">Pulley Analysis (IMA: Number of Supporting Ropes)</h3>
-                    <div class="grid lg:grid-cols-2 gap-8">
-                        <div class="grid grid-cols-2 gap-6 machine-inputs" data-machine="pulley">
-                            <!-- IMA Specific Inputs -->
-                            <div class="input-group">
-                                <label for="Ima_pul" class="block text-sm text-gray-700">Number of Supporting Ropes ($N$)</label>
-                                <input type="number" id="Ima_pul" placeholder="e.g. 4" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Count (This is the IMA)</p>
-                            </div>
-                            <div class="input-group">
-                                <label class="block text-sm text-gray-700">D_r (Resistance Distance)</label>
-                                <input type="number" disabled value="1" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
-                                <p class="text-xs text-gray-500 mt-1">IMA calculation uses $D_r = 1$ for rope distance.</p>
-                            </div>
-                            <!-- AMA/Effort Inputs (3, one must be empty) -->
-                            <div class="input-group">
-                                <label for="Fe_pul" class="block text-sm text-gray-700">Effort Force ($F_e$)</label>
-                                <input type="number" id="Fe_pul" placeholder="e.g. 100" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group">
-                                <label for="Fr_pul" class="block text-sm text-gray-700">Resistance Force ($F_r$)</label>
-                                <input type="number" id="Fr_pul" placeholder="e.g. 350" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group col-span-2">
-                                <label for="Eff_pul" class="block text-sm text-gray-700">Efficiency ($\eta$)</label>
-                                <input type="number" id="Eff_pul" placeholder="e.g. 87.5" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Percentage (0-100)</p>
-                            </div>
-                        </div>
-                        <div id="pulley-outputs"></div>
-                    </div>
-                </div>
-                
-                <!-- 5. INCLINED PLANE CALCULATOR -->
-                <div id="content-inclined-plane" class="tab-pane hidden">
-                    <h3 class="text-xl font-bold text-blue-700 mb-4">Inclined Plane Analysis (IMA: $L / h$)</h3>
-                    <div class="grid lg:grid-cols-2 gap-8">
-                        <div class="grid grid-cols-2 gap-6 machine-inputs" data-machine="inclined-plane">
-                            <!-- IMA Specific Inputs -->
-                            <div class="input-group">
-                                <label for="De_ip" class="block text-sm text-gray-700">Incline Length ($L$)</label>
-                                <input type="number" id="De_ip" placeholder="e.g. 10" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance (m/ft)</p>
-                            </div>
-                            <div class="input-group">
-                                <label for="Dr_ip" class="block text-sm text-gray-700">Vertical Height ($h$)</label>
-                                <input type="number" id="Dr_ip" placeholder="e.g. 2" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance (m/ft)</p>
-                            </div>
-                            <!-- AMA/Effort Inputs (3, one must be empty) -->
-                            <div class="input-group">
-                                <label for="Fe_ip" class="block text-sm text-gray-700">Effort Force ($F_e$)</label>
-                                <input type="number" id="Fe_ip" placeholder="e.g. 25" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group">
-                                <label for="Fr_ip" class="block text-sm text-gray-700">Resistance Force ($F_r$)</label>
-                                <input type="number" id="Fr_ip" placeholder="e.g. 100" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group col-span-2">
-                                <label for="Eff_ip" class="block text-sm text-gray-700">Efficiency ($\eta$)</label>
-                                <input type="number" id="Eff_ip" placeholder="e.g. 80" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Percentage (0-100)</p>
-                            </div>
-                        </div>
-                        <div id="inclined-plane-outputs"></div>
-                    </div>
-                </div>
-
-                <!-- 6. WEDGE CALCULATOR -->
-                <div id="content-wedge" class="tab-pane hidden">
-                    <h3 class="text-xl font-bold text-blue-700 mb-4">Wedge Analysis (IMA: $L / t$)</h3>
-                    <p class="text-sm text-gray-500 mb-4">Note: The IMA calculation for a wedge is often theoretical and may not reflect real-world friction. Use the general analysis for complex scenarios.</p>
-                    <div class="grid lg:grid-cols-2 gap-8">
-                        <div class="grid grid-cols-2 gap-6 machine-inputs" data-machine="wedge">
-                            <!-- IMA Specific Inputs -->
-                            <div class="input-group">
-                                <label for="De_wed" class="block text-sm text-gray-700">Wedge Length ($L$)</label>
-                                <input type="number" id="De_wed" placeholder="e.g. 15" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance (in/cm)</p>
-                            </div>
-                            <div class="input-group">
-                                <label for="Dr_wed" class="block text-sm text-gray-700">Wedge Thickness ($t$)</label>
-                                <input type="number" id="Dr_wed" placeholder="e.g. 3" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance (in/cm)</p>
-                            </div>
-                            <!-- AMA/Effort Inputs (3, one must be empty) -->
-                            <div class="input-group">
-                                <label for="Fe_wed" class="block text-sm text-gray-700">Effort Force ($F_e$)</label>
-                                <input type="number" id="Fe_wed" placeholder="e.g. 500" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group">
-                                <label for="Fr_wed" class="block text-sm text-gray-700">Resistance Force ($F_r$)</label>
-                                <input type="number" id="Fr_wed" placeholder="e.g. 2000" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group col-span-2">
-                                <label for="Eff_wed" class="block text-sm text-gray-700">Efficiency ($\eta$)</label>
-                                <input type="number" id="Eff_wed" placeholder="e.g. 70" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Percentage (0-100)</p>
-                            </div>
-                        </div>
-                        <div id="wedge-outputs"></div>
-                    </div>
-                </div>
-
-                <!-- 7. SCREW CALCULATOR -->
-                <div id="content-screw" class="tab-pane hidden">
-                    <h3 class="text-xl font-bold text-blue-700 mb-4">Screw Analysis (IMA: $2\pi r / p$)</h3>
-                    <div class="grid lg:grid-cols-2 gap-8">
-                        <div class="grid grid-cols-2 gap-6 machine-inputs" data-machine="screw">
-                            <!-- IMA Specific Inputs -->
-                            <div class="input-group">
-                                <label for="r_scr" class="block text-sm text-gray-700">Effort Radius ($r$) (Handle Length)</label>
-                                <input type="number" id="r_scr" placeholder="e.g. 0.2" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance (m/cm)</p>
-                            </div>
-                            <div class="input-group">
-                                <label for="p_scr" class="block text-sm text-gray-700">Pitch ($p$) (Thread Distance)</label>
-                                <input type="number" id="p_scr" placeholder="e.g. 0.005" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Distance (m/cm)</p>
-                            </div>
-                            <!-- AMA/Effort Inputs (3, one must be empty) -->
-                            <div class="input-group">
-                                <label for="Fe_scr" class="block text-sm text-gray-700">Effort Force ($F_e$)</label>
-                                <input type="number" id="Fe_scr" placeholder="e.g. 10" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group">
-                                <label for="Fr_scr" class="block text-sm text-gray-700">Resistance Force ($F_r$)</label>
-                                <input type="number" id="Fr_scr" placeholder="e.g. 1500" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Force</p>
-                            </div>
-                            <div class="input-group col-span-2">
-                                <label for="Eff_scr" class="block text-sm text-gray-700">Efficiency ($\eta$)</label>
-                                <input type="number" id="Eff_scr" placeholder="e.g. 30" class="input-field mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg">
-                                <p class="text-xs text-gray-500 mt-1">Unit: Percentage (0-100)</p>
-                            </div>
-                        </div>
-                        <div id="screw-outputs"></div>
-                    </div>
-                </div>
-
-                <!-- Shared Calculation/Clear Buttons and Message Box for Machine-Specific Tabs -->
-                <div id="shared-controls" class="mt-8 flex space-x-4">
-                    <button id="calculate-btn-machine" class="flex-1 px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300">
-                        Calculate Machine Results
-                    </button>
-                    <button id="clear-btn-machine" class="px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg hover:bg-gray-300 transition duration-200 focus:outline-none focus:ring-4 focus:ring-gray-400">
-                        Clear Inputs
-                    </button>
-                </div>
-
-            </div>
-            
-        </div>
-
-        <footer class="mt-10 text-center text-sm text-gray-500">
-            <p>Formulas: $IMA$ is machine-specific; $AMA = F_r / F_e$; $\eta = (AMA / IMA) \times 100\%$.</p>
-        </footer>
+    <div id="app-container" class="min-h-screen">
+        <!-- Content will be injected here by JavaScript -->
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Global Utility Functions ---
+        // --- Global State ---
+        const state = {
+            view: 'home', // 'home', 'calculator', 'simple-machine', 'settings'
             
-            const messageBoxGen = document.getElementById('message-box-gen');
-            const machineMessageBox = document.querySelector('.machine-message-box');
+            // Settings
+            precision: 4, 
+            angleMode: 'radians', // 'radians' or 'degrees'
 
-            const showMessage = (box, text, isError = true) => {
-                box.textContent = text;
-                box.classList.remove('hidden');
-                if (isError) {
-                    box.classList.remove('bg-green-100', 'text-green-700');
-                    box.classList.add('bg-red-100', 'text-red-700');
-                } else {
-                    box.classList.remove('bg-red-100', 'text-red-700');
-                    box.classList.add('bg-green-100', 'text-green-700');
+            // Calculator State
+            calcMode: 'scientific', // 'scientific' or 'graphing'
+            calcInput: '',
+            calcResult: '',
+            calcError: '',
+            functionInput: 'sin(x)',
+
+            // Simple Machine State
+            activeSmTab: 'general',
+            smInputs: {
+                // General
+                Fe_gen: '', De_gen: '', Fr_gen: '', Dr_gen: '', Eff_gen: '',
+                // Machine specific
+                De_lev: '', Dr_lev: '', Fe_lev: '', Fr_lev: '', Eff_lev: '',
+                De_wa: '', Dr_wa: '', Fe_wa: '', Fr_wa: '', Eff_wa: '',
+                Ima_pul: '', Fe_pul: '', Fr_pul: '', Eff_pul: '',
+                De_ip: '', Dr_ip: '', Fe_ip: '', Fr_ip: '', Eff_ip: '',
+                De_wed: '', Dr_wed: '', Fe_wed: '', Fr_wed: '', Eff_wed: '',
+                r_scr: '', p_scr: '', Fe_scr: '', Fr_scr: '', Eff_scr: '',
+            },
+            smResults: {},
+            smError: '',
+        };
+
+        // --- Constants ---
+        const MachineConfigs = {
+            'lever': {
+                prefix: 'lev', formula: (i) => i.De / i.Dr,
+                imaLabels: { De: 'Effort Arm Length ($L_e$)', Dr: 'Resistance Arm Length ($L_r$)' },
+            },
+            'wheel-axle': {
+                prefix: 'wa', formula: (i) => i.De / i.Dr,
+                imaLabels: { De: 'Radius of Wheel ($R_{wheel}$)', Dr: 'Radius of Axle ($R_{axle}$)' },
+            },
+            'inclined-plane': {
+                prefix: 'ip', formula: (i) => i.De / i.Dr,
+                imaLabels: { De: 'Incline Length ($L$)', Dr: 'Vertical Height ($h$)' },
+            },
+            'wedge': {
+                prefix: 'wed', formula: (i) => i.De / i.Dr,
+                imaLabels: { De: 'Wedge Length ($L$)', Dr: 'Wedge Thickness ($t$)' },
+            },
+            'pulley': {
+                prefix: 'pul', formula: (i) => i.Ima,
+                imaLabels: { Ima: 'Number of Supporting Ropes ($N$)' },
+            },
+            'screw': {
+                prefix: 'scr', formula: (i) => (2 * Math.PI * i.r) / i.p,
+                imaLabels: { r: 'Effort Radius ($r$)', p: 'Pitch ($p$)' },
+            }
+        };
+
+        const tabLabels = {
+            'general': 'General Solver', 'lever': 'Lever', 'wheel-axle': 'Wheel & Axle', 
+            'pulley': 'Pulley', 'inclined-plane': 'Inclined Plane', 'wedge': 'Wedge', 'screw': 'Screw',
+        };
+
+        const missingNameMap = { 
+            Fe: 'Effort Force ($F_e$)', De: 'Effort Distance ($D_e$)', 
+            Fr: 'Resistance Force ($F_r$)', Dr: 'Resistance Distance ($D_r$)', 
+            Eff_perc: 'Efficiency ($\eta$)' 
+        };
+        
+        // --- Utility Functions ---
+
+        /**
+         * Safely evaluates a math expression, handles angle conversion.
+         */
+        const createMathFunction = (expression, angleMode) => {
+            let funcBody = expression.toLowerCase();
+            
+            // Replace common math functions/constants
+            funcBody = funcBody.replace(/sin/g, 'Math.sin');
+            funcBody = funcBody.replace(/cos/g, 'Math.cos');
+            funcBody = funcBody.replace(/tan/g, 'Math.tan');
+            funcBody = funcBody.replace(/log/g, 'Math.log');
+            funcBody = funcBody.replace(/exp/g, 'Math.exp');
+            funcBody = funcBody.replace(/sqrt/g, 'Math.sqrt');
+            funcBody = funcBody.replace(/pi/g, 'Math.PI');
+            funcBody = funcBody.replace(/e\b/g, 'Math.E');
+            funcBody = funcBody.replace(/\^/g, '**');
+            
+            // Handle Degrees to Radians conversion for trig functions if angleMode is 'degrees'
+            if (angleMode === 'degrees') {
+                funcBody = funcBody.replace(/Math\.sin\(([^)]+)\)/g, 'Math.sin( (parseFloat($1) * Math.PI / 180) )');
+                funcBody = funcBody.replace(/Math\.cos\(([^)]+)\)/g, 'Math.cos( (parseFloat($1) * Math.PI / 180) )');
+                funcBody = funcBody.replace(/Math\.tan\(([^)]+)\)/g, 'Math.tan( (parseFloat($1) * Math.PI / 180) )');
+            }
+
+            try {
+                // eslint-disable-next-line no-new-func
+                return new Function('x', `
+                    "use strict";
+                    try {
+                        const X = parseFloat(x);
+                        return ${funcBody};
+                    } catch (e) {
+                        return NaN;
+                    }
+                `);
+            } catch (e) {
+                return () => { throw new Error("Invalid Function Syntax"); };
+            }
+        };
+
+        /**
+         * Formats a number to the specified decimal precision.
+         */
+        const formatNumber = (num, unit = '', precision) => {
+            if (num === null || isNaN(num) || !isFinite(num)) return '--';
+            return `${parseFloat(num).toFixed(precision)}${unit}`;
+        };
+
+        /**
+         * Renders the output card HTML block.
+         */
+        const renderOutputCard = (title, value, unit, color) => {
+            return `
+                <div class="p-4 rounded-xl border-l-4 ${color.border} ${color.bg}">
+                    <p class="text-sm font-medium text-gray-200">${title}:</p>
+                    <p class="text-2xl font-extrabold text-white mt-1">
+                        ${formatNumber(value, unit, state.precision)}
+                    </p>
+                </div>
+            `;
+        };
+        
+        // --- Simple Machine Logic ---
+
+        /**
+         * FIX: Handles input change, stores value, and restores focus after re-render.
+         */
+        const handleSmInputChange = (e, key) => {
+            // 1. Store the new value
+            state.smInputs[key] = e.target.value;
+            state.smError = '';
+
+            // 2. Capture focused element details before re-render
+            const activeElement = e.target;
+            const inputKey = activeElement.getAttribute('data-key');
+            // Capture cursor position only if the input type supports it (i.e., type="text")
+            const cursorStart = activeElement.selectionStart;
+            const cursorEnd = activeElement.selectionEnd;
+
+            // 3. Re-render the view (which causes focus loss)
+            renderSimpleMachineView(false); 
+
+            // 4. Restore focus and cursor position after re-render
+            if (inputKey) {
+                // Use a short timeout to wait for the DOM to update completely
+                setTimeout(() => {
+                    const newActiveElement = document.querySelector(`[data-key="${inputKey}"]`);
+                    if (newActiveElement) {
+                        newActiveElement.focus();
+                        // This only works correctly for type="text", which we are now using.
+                        newActiveElement.selectionStart = cursorStart;
+                        newActiveElement.selectionEnd = cursorEnd;
+                    }
+                }, 0);
+            }
+        };
+
+        const calculateGeneral = () => {
+            state.smResults = {};
+            state.smError = '';
+
+            // Use parseFloat to convert text inputs to numbers
+            const inputs = {
+                Fe: parseFloat(state.smInputs.Fe_gen),
+                De: parseFloat(state.smInputs.De_gen),
+                Fr: parseFloat(state.smInputs.Fr_gen),
+                Dr: parseFloat(state.smInputs.Dr_gen),
+                Eff_perc: parseFloat(state.smInputs.Eff_gen)
+            };
+            
+            const inputsRatio = {...inputs, Eff: inputs.Eff_perc / 100};
+
+            const presentCount = Object.values(inputs).filter(val => !isNaN(val)).length;
+            let missingVar = null;
+
+            if (presentCount !== 4) {
+                state.smError = `Please enter **exactly four** of the five values. You entered ${presentCount}.`;
+                renderSimpleMachineView(false); // Fix: use false for re-render
+                return;
+            }
+
+            for (const key in inputs) {
+                if (isNaN(inputs[key])) {
+                    missingVar = key;
+                    break;
                 }
-            };
-
-            const clearMessage = (box) => {
-                box.classList.add('hidden');
-                box.textContent = '';
-            };
-
-            const formatResult = (value) => {
-                if (isNaN(value)) return '--';
-                if (value === Infinity) return 'Infinite';
-                return value.toFixed(4);
             }
             
-            // --- View Management Logic (Home vs Calculator) ---
-            const homeView = document.getElementById('home-view');
-            const simpleMachineView = document.getElementById('simple-machine-calculator-view');
-            const selectSimpleMachineBtn = document.getElementById('select-simple-machine');
-            const backToHomeBtn = document.getElementById('back-to-home-btn');
-            let activeTab = 'general';
+            const i = {...inputsRatio};
+            delete i.Eff_perc;
+            
+            let missingValue = NaN;
 
-            const showScreen = (screenId) => {
-                homeView.classList.add('hidden');
-                simpleMachineView.classList.add('hidden');
-
-                if (screenId === 'home') {
-                    homeView.classList.remove('hidden');
-                } else if (screenId === 'simpleMachine') {
-                    simpleMachineView.classList.remove('hidden');
+            try {
+                switch (missingVar) {
+                    case 'Fe':
+                        missingValue = (i.Fr * i.Dr) / (i.De * i.Eff); 
+                        break;
+                    case 'De':
+                        missingValue = (i.Fr * i.Dr) / (i.Fe * i.Eff); 
+                        break;
+                    case 'Fr':
+                        missingValue = (i.Fe * i.De * i.Eff) / i.Dr; 
+                        break;
+                    case 'Dr':
+                        missingValue = (i.Fe * i.De * i.Eff) / i.Fr; 
+                        break;
+                    case 'Eff_perc':
+                        const IMA_calc = i.De / i.Dr;
+                        const AMA_calc = i.Fr / i.Fe;
+                        missingValue = (AMA_calc / IMA_calc) * 100;
+                        break;
+                    default:
+                        throw new Error("Missing variable not identified.");
                 }
+
+                if (!isFinite(missingValue) || missingValue < 0) {
+                    state.smError = `Error: Result is non-finite or negative. Check for zero divisions or invalid inputs.`;
+                    renderSimpleMachineView(false); // Fix: use false for re-render
+                    return;
+                }
+
+                let finalIMA, finalAMA, finalEff;
+
+                if (missingVar === 'Eff_perc') {
+                    finalEff = missingValue / 100;
+                } else {
+                    i[missingVar] = missingValue;
+                }
+
+                // Recalculate IMA, AMA, and Eff with the complete set of inputs
+                finalIMA = i.De / i.Dr;
+                finalAMA = i.Fr / i.Fe;
+                finalEff = finalAMA / finalIMA;
+
+                state.smResults = {
+                    IMA: finalIMA,
+                    AMA: finalAMA,
+                    Eff: finalEff * 100,
+                    solvedName: missingNameMap[missingVar],
+                    solvedValue: missingValue,
+                    solvedUnit: missingVar === 'Eff_perc' ? '%' : (missingVar.includes('F') ? '(N/lb)' : '(m/ft)'),
+                };
+
+            } catch (e) {
+                state.smError = `Calculation Error: ${e.message}.`;
+            }
+
+            renderSimpleMachineView(false); // Fix: use false for re-render
+        };
+
+        const calculateMachine = () => {
+            state.smResults = {};
+            state.smError = '';
+            const config = MachineConfigs[state.activeSmTab];
+            if (!config) {
+                state.smError = 'Invalid machine selected.';
+                renderSimpleMachineView(false); // Fix: use false for re-render
+                return;
+            }
+
+            const prefix = config.prefix;
+            // Use parseFloat to convert text inputs to numbers
+            const inputs = {
+                Fe: parseFloat(state.smInputs[`Fe_${prefix}`]),
+                Fr: parseFloat(state.smInputs[`Fr_${prefix}`]),
+                Eff: parseFloat(state.smInputs[`Eff_${prefix}`]) / 100 // Ratio
             };
             
-            showScreen('home'); 
+            let IMA = null;
+            let amaVarsCount = Object.values(inputs).filter(val => !isNaN(val)).length;
+            let solvedName = null;
+            let solvedValue = null;
+            let finalAMA = null;
+            let finalEff_perc = null;
+            let solvedUnit = null;
 
-            selectSimpleMachineBtn.addEventListener('click', () => {
-                showScreen('simpleMachine');
-                switchTab('general'); // Always start on the general solver
-            });
-            backToHomeBtn.addEventListener('click', () => showScreen('home'));
-
-
-            // --- Tab Switching Logic (Within Simple Machine Calculator) ---
-            const tabs = document.querySelectorAll('#calculator-tabs .tab');
-            const tabPanes = document.querySelectorAll('#tab-content .tab-pane');
-
-            const switchTab = (tabId) => {
-                activeTab = tabId;
-                tabs.forEach(tab => {
-                    tab.classList.remove('active');
-                    if (tab.getAttribute('data-tab') === tabId) {
-                        tab.classList.add('active');
-                    }
-                });
-
-                tabPanes.forEach(pane => {
-                    pane.classList.add('hidden');
-                    pane.classList.remove('active-pane');
-                    if (pane.id === `content-${tabId}`) {
-                        pane.classList.remove('hidden');
-                        pane.classList.add('active-pane');
-                    }
-                });
-                
-                // Show/Hide machine controls based on tab
-                const controls = document.getElementById('shared-controls');
-                if (tabId === 'general') {
-                    controls.classList.add('hidden');
-                    messageBoxGen.classList.remove('hidden');
-                    machineMessageBox.classList.add('hidden');
+            // 1. Calculate IMA
+            try {
+                const imaInputs = {};
+                let imaCount = 0;
+                if (prefix === 'pul') {
+                    imaInputs.Ima = parseFloat(state.smInputs.Ima_pul);
+                    if (!isNaN(imaInputs.Ima)) imaCount++;
+                } else if (prefix === 'scr') {
+                    imaInputs.r = parseFloat(state.smInputs.r_scr);
+                    imaInputs.p = parseFloat(state.smInputs.p_scr);
+                    if (!isNaN(imaInputs.r)) imaCount++;
+                    if (!isNaN(imaInputs.p)) imaCount++;
                 } else {
-                    controls.classList.remove('hidden');
-                    messageBoxGen.classList.add('hidden');
-                    machineMessageBox.classList.remove('hidden');
+                    imaInputs.De = parseFloat(state.smInputs[`De_${prefix}`]);
+                    imaInputs.Dr = parseFloat(state.smInputs[`Dr_${prefix}`]);
+                    if (!isNaN(imaInputs.De)) imaCount++;
+                    if (!isNaN(imaInputs.Dr)) imaCount++;
                 }
-                clearMessage(machineMessageBox);
-            };
 
-            tabs.forEach(tab => {
-                tab.addEventListener('click', (e) => {
-                    switchTab(e.target.getAttribute('data-tab'));
-                });
+                const imaRequired = Object.keys(config.imaLabels).length;
+                if (imaCount === imaRequired) {
+                    IMA = config.formula(imaInputs);
+                    if (IMA <= 0) throw new Error("IMA must be positive.");
+                }
+            } catch (e) {
+                state.smError = `IMA Calculation Error: ${e.message}.`;
+                renderSimpleMachineView(false); // Fix: use false for re-render
+                return;
+            }
+
+            const nameMap = { Fe: 'Effort Force ($F_e$)', Fr: 'Resistance Force ($F_r$)', Eff: 'Efficiency ($\eta$)' };
+            
+            // 2. Solve for AMA/Efficiency
+            try {
+                if (IMA !== null) {
+                    if (amaVarsCount === 3) {
+                        finalAMA = inputs.Fr / inputs.Fe;
+                        finalEff_perc = (finalAMA / IMA) * 100;
+                        if (Math.abs(finalEff_perc - (inputs.Eff * 100)) > 1) {
+                            state.smError = "Warning: Input values are inconsistent. Calculated $\\eta$ will be shown.";
+                        } else {
+                            finalEff_perc = inputs.Eff * 100;
+                        }
+                    } else if (amaVarsCount === 2) {
+                        const missingKey = Object.keys(inputs).find(key => isNaN(inputs[key]));
+                        
+                        if (missingKey === 'Eff') {
+                            finalAMA = inputs.Fr / inputs.Fe;
+                            solvedValue = (finalAMA / IMA) * 100;
+                            solvedName = nameMap.Eff;
+                            finalEff_perc = solvedValue;
+                            solvedUnit = '%';
+                        } else if (missingKey === 'Fr') {
+                            finalAMA = IMA * inputs.Eff;
+                            solvedValue = finalAMA * inputs.Fe;
+                            solvedName = nameMap.Fr;
+                            finalEff_perc = inputs.Eff * 100;
+                            solvedUnit = '(N/lb)';
+                        } else if (missingKey === 'Fe') {
+                            finalAMA = inputs.Fr / (IMA * inputs.Eff);
+                            solvedValue = finalAMA * inputs.Fe;
+                            solvedName = nameMap.Fe;
+                            finalEff_perc = inputs.Eff * 100;
+                            solvedUnit = '(N/lb)';
+                        }
+                    } else {
+                        state.smError = 'IMA is calculated. Enter at least 2 of 3 AMA/Efficiency values.';
+                        renderSimpleMachineView(false); // Fix: use false for re-render
+                        return;
+                    }
+                } else {
+                    if (inputs.Fr && inputs.Fe) {
+                        finalAMA = inputs.Fr / inputs.Fe;
+                        finalEff_perc = inputs.Eff ? inputs.Eff * 100 : null;
+                        state.smError = 'IMA values are missing. Only AMA is calculated.';
+                    } else {
+                        state.smError = 'Enter all IMA values OR $F_e$ and $F_r$ to calculate AMA.';
+                        renderSimpleMachineView(false); // Fix: use false for re-render
+                        return;
+                    }
+                }
+                
+                state.smResults = {
+                    IMA: IMA,
+                    AMA: finalAMA,
+                    Eff: finalEff_perc,
+                    solvedName: solvedName,
+                    solvedValue: solvedValue,
+                    solvedUnit: solvedUnit,
+                };
+
+            } catch (e) {
+                state.smError = `Calculation Error: ${e.message}.`;
+            }
+
+            renderSimpleMachineView(false); // Fix: use false for re-render
+        };
+
+        const handleSmClear = (prefix) => {
+            state.smResults = {};
+            state.smError = '';
+            
+            Object.keys(state.smInputs).forEach(key => {
+                if (key.startsWith(prefix)) {
+                    state.smInputs[key] = '';
+                }
+            });
+            renderSimpleMachineView(false); // Fix: use false for re-render
+        };
+
+        // --- Calculator Logic & Graphing ---
+        
+        const handleCalcClick = (buttonValue) => {
+            state.calcError = '';
+            if (buttonValue === 'clear') {
+                state.calcInput = '';
+                state.calcResult = '';
+            } else if (buttonValue === 'del') {
+                state.calcInput = state.calcInput.slice(0, -1);
+            } else if (buttonValue === 'calculate') {
+                try {
+                    let expression = state.calcInput.replace(/×/g, '*').replace(/÷/g, '/');
+                    
+                    const safeEval = createMathFunction(expression, state.angleMode);
+                    let result = safeEval(0); // Pass a dummy 'x' value
+
+                    if (!isFinite(result)) {
+                        state.calcResult = 'Error';
+                        state.calcError = 'Result is undefined or too large.';
+                    } else {
+                        result = parseFloat(result.toFixed(state.precision));
+                        state.calcResult = String(result);
+                        state.calcInput = String(result);
+                    }
+                } catch (e) {
+                    state.calcResult = 'Error';
+                    state.calcError = 'Invalid expression or syntax error.';
+                }
+            } else {
+                if (state.calcResult !== '' && state.calcInput === state.calcResult) {
+                    state.calcResult = '';
+                    state.calcInput = buttonValue;
+                } else {
+                    state.calcInput += buttonValue;
+                }
+            }
+            renderCalculatorView(false); // Fix: use false for re-render
+        };
+
+        let f_x = null;
+        let lastFunctionInput = '';
+        let lastAngleMode = '';
+
+        const getCompiledFunction = () => {
+            if (state.functionInput === lastFunctionInput && state.angleMode === lastAngleMode && f_x) {
+                return f_x;
+            }
+
+            lastFunctionInput = state.functionInput;
+            lastAngleMode = state.angleMode;
+
+            try {
+                f_x = createMathFunction(state.functionInput, state.angleMode);
+                f_x(0); // Test compilation
+                state.calcError = '';
+                return f_x;
+            } catch (e) {
+                state.calcError = 'Invalid Function Syntax';
+                f_x = null;
+                return null;
+            }
+        };
+
+        const drawGraph = () => {
+            const canvas = document.getElementById('graphing-canvas');
+            const compiledFunc = getCompiledFunction();
+            if (!canvas || !compiledFunc) return;
+
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size to match container for responsiveness
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = 400; 
+
+            const width = canvas.width;
+            const height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+
+            const xMin = -10;
+            const xMax = 10;
+            const yMin = -10;
+            const yMax = 10;
+            const xScale = width / (xMax - xMin);
+            const yScale = height / (yMax - yMin);
+            const xOrigin = -xMin * xScale;
+            const yOrigin = yMax * yScale;
+
+            const toCanvas = (x, y) => ({
+                px: x * xScale + xOrigin,
+                py: -y * yScale + yOrigin,
             });
 
-            // --- Template for Machine-Specific Outputs ---
-            const createOutputHTML = (machineName) => {
-                return `
-                    <h2 class="text-xl font-semibold mb-6 text-gray-700">Calculated Results</h2>
-                    <div class="space-y-4">
-                        <div class="p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
-                            <p class="text-sm font-medium text-gray-800">Missing Variable: <span id="output-missing-name-${machineName}" class="font-bold text-yellow-700">N/A</span></p>
-                            <p class="text-lg font-bold text-yellow-700"><span id="output-missing-value-${machineName}">--</span></p>
+            // 1. Draw Grid and Axes
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.font = '10px Inter, sans-serif';
+            ctx.fillStyle = '#999';
+            
+            // Axes
+            ctx.beginPath(); 
+            ctx.moveTo(0, yOrigin); ctx.lineTo(width, yOrigin); ctx.stroke();
+            ctx.moveTo(xOrigin, 0); ctx.lineTo(xOrigin, height); ctx.stroke();
+            
+            // Grid lines and labels
+            for (let i = xMin; i <= xMax; i += 2) {
+                const { px } = toCanvas(i, 0);
+                if (i !== 0 && px > 0 && px < width) {
+                    ctx.beginPath();
+                    ctx.moveTo(px, yOrigin - 3); ctx.lineTo(px, yOrigin + 3); ctx.stroke();
+                    ctx.fillText(i, px + 2, yOrigin + 15);
+                }
+            }
+            for (let i = yMin; i <= yMax; i += 2) {
+                const { py } = toCanvas(0, i);
+                if (i !== 0 && py > 0 && py < height) {
+                    ctx.beginPath();
+                    ctx.moveTo(xOrigin - 3, py); ctx.lineTo(xOrigin + 3, py); ctx.stroke();
+                    ctx.fillText(i, xOrigin + 10, py + 3);
+                }
+            }
+
+            // 2. Draw the Function Curve
+            ctx.strokeStyle = '#3b82f6'; // Blue line
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            let firstPoint = true;
+            for (let px = 0; px <= width; px++) {
+                const x = (px - xOrigin) / xScale;
+                try {
+                    const y = compiledFunc(x);
+                    const { py } = toCanvas(x, y);
+
+                    // Basic bounds checking to prevent huge lines from tangent/asymptotes
+                    if (isFinite(y) && py >= -1000 && py <= height + 1000) {
+                        if (firstPoint) {
+                            ctx.moveTo(px, py);
+                            firstPoint = false;
+                        } else {
+                            ctx.lineTo(px, py);
+                        }
+                    } else {
+                        firstPoint = true;
+                    }
+                } catch (error) {
+                    firstPoint = true;
+                }
+            }
+            ctx.stroke();
+            renderCalculatorView(false); // Update error display if needed
+        };
+
+        // --- Render Functions ---
+
+        const renderHomeView = () => {
+            document.getElementById('app-container').innerHTML = `
+                <div class="p-4 sm:p-8 max-w-4xl mx-auto min-h-screen flex flex-col justify-center">
+                    <h1 class="text-5xl font-extrabold text-white mb-10 tracking-tight text-center">
+                        engineering tools by Terminal_Dev
+                    </h1>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <!-- Simple Machine Tile -->
+                        <button
+                            data-view="simple-machine"
+                            class="nav-button bg-indigo-600 p-6 rounded-3xl shadow-xl transition transform hover:scale-[1.02] hover:shadow-2xl
+                                flex flex-col items-start text-left focus:outline-none focus:ring-4 focus:ring-indigo-500"
+                        >
+                            <div class="mb-4 p-3 rounded-xl bg-white/20">
+                                <i data-lucide="scaling" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <h2 class="text-xl font-semibold text-white mb-1">Simple Machine Analysis</h2>
+                            <p class="text-sm text-white/80 leading-relaxed formula-text">Calculate IMA, AMA, and Efficiency ($\eta$) for six machine types.</p>
+                        </button>
+
+                        <!-- Calculator Tile -->
+                        <button
+                            data-view="calculator"
+                            class="nav-button bg-blue-600 p-6 rounded-3xl shadow-xl transition transform hover:scale-[1.02] hover:shadow-2xl
+                                flex flex-col items-start text-left focus:outline-none focus:ring-4 focus:ring-blue-500"
+                        >
+                            <div class="mb-4 p-3 rounded-xl bg-white/20">
+                                <i data-lucide="calculator" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <h2 class="text-xl font-semibold text-white mb-1">Scientific Calculator</h2>
+                            <p class="text-sm text-white/80 leading-relaxed">Perform complex calculations and visualize functions f(x).</p>
+                        </button>
+
+                        <!-- Settings Tile -->
+                        <button
+                            data-view="settings"
+                            class="nav-button bg-emerald-600 p-6 rounded-3xl shadow-xl transition transform hover:scale-[1.02] hover:shadow-2xl
+                                flex flex-col items-start text-left focus:outline-none focus:ring-4 focus:ring-emerald-500"
+                        >
+                            <div class="mb-4 p-3 rounded-xl bg-white/20">
+                                <i data-lucide="settings" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <h2 class="text-xl font-semibold text-white mb-1">Settings</h2>
+                            <p class="text-sm text-white/80 leading-relaxed">Adjust global precision and calculation modes.</p>
+                        </button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            addNavListeners();
+        };
+
+        const renderGeneralSmContent = () => {
+            const inputs = [
+                { key: 'Fe_gen', label: 'Effort Force ($F_e$)', placeholder: 'e.g. 50', unit: 'Force (N/lb)' },
+                { key: 'De_gen', label: 'Effort Distance ($D_e$)', placeholder: 'e.g. 5', unit: 'Distance (m/ft)' },
+                { key: 'Fr_gen', label: 'Resistance Force ($F_r$)', placeholder: 'e.g. 400', unit: 'Force (N/lb)' },
+                { key: 'Dr_gen', label: 'Resistance Distance ($D_r$)', placeholder: 'e.g. 1', unit: 'Distance (m/ft)' },
+            ];
+
+            return `
+                <div>
+                    <p class="text-sm text-gray-400 mb-4">
+                        Enter <strong class="text-white">exactly four</strong> of the five variables ($F_e, D_e, F_r, D_r, \eta$) to solve for the missing one.
+                    </p>
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <!-- General Input Fields -->
+                        <div class="grid grid-cols-2 gap-6" id="sm-general-inputs">
+                            ${inputs.map(input => `
+                                <div class="input-group">
+                                    <label class="block text-sm text-gray-300 formula-text">${input.label}</label>
+                                    <input 
+                                        type="text" 
+                                        value="${state.smInputs[input.key] || ''}" 
+                                        data-key="${input.key}"
+                                        oninput="handleSmInputChange(event, '${input.key}')" 
+                                        placeholder="${input.placeholder}" 
+                                        class="input-field sm-input mt-1 w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-600 focus:border-indigo-500 focus:ring-indigo-500" 
+                                    />
+                                    <p class="text-xs text-gray-500 mt-1">Unit: ${input.unit} (Enter numbers only)</p>
+                                </div>
+                            `).join('')}
+                            <div class="input-group col-span-2">
+                                <label class="block text-sm text-gray-300 formula-text">Efficiency ($\eta$)</label>
+                                <input 
+                                    type="text" 
+                                    value="${state.smInputs.Eff_gen || ''}" 
+                                    data-key="Eff_gen"
+                                    oninput="handleSmInputChange(event, 'Eff_gen')" 
+                                    placeholder="e.g. 67 (for 67%)" 
+                                    class="input-field sm-input mt-1 w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-600 focus:border-indigo-500 focus:ring-indigo-500" 
+                                />
+                                <p class="text-xs text-gray-500 mt-1">Unit: Percentage (0-100) (Enter numbers only)</p>
+                            </div>
                         </div>
-                        <div class="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
-                            <p class="text-sm font-medium text-gray-800">Ideal Mechanical Advantage (IMA):</p>
-                            <p class="text-lg font-bold text-blue-700"><span id="output-IMA-${machineName}">--</span></p>
-                            <p class="text-xs text-gray-500 mt-1">Formula: Machine Specific</p>
-                        </div>
-                        <div class="p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
-                            <p class="text-sm font-medium text-gray-800">Actual Mechanical Advantage (AMA):</p>
-                            <p class="text-lg font-bold text-green-700"><span id="output-AMA-${machineName}">--</span></p>
-                            <p class="text-xs text-gray-500 mt-1">Formula: $AMA = F_r / F_e$</p>
-                        </div>
-                        <div class="p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-lg">
-                            <p class="text-sm font-medium text-gray-800">Efficiency ($\eta$):</p>
-                            <p class="text-lg font-bold text-indigo-700"><span id="output-Efficiency-${machineName}">--</span></p>
-                            <p class="text-xs text-gray-500 mt-1">Formula: $\eta = (AMA / IMA) \times 100\%$</p>
+                        <!-- General Output Fields -->
+                        <div class="space-y-4">
+                            ${state.smResults.solvedName ? renderOutputCard('Missing Variable', state.smResults.solvedValue, state.smResults.solvedUnit, { border: 'border-yellow-500', bg: 'bg-yellow-900/40' }) : ''}
+                            ${renderOutputCard('Ideal Mechanical Advantage (IMA)', state.smResults.IMA, '', { border: 'border-indigo-500', bg: 'bg-indigo-900/40' })}
+                            ${renderOutputCard('Actual Mechanical Advantage (AMA)', state.smResults.AMA, '', { border: 'border-green-500', bg: 'bg-green-900/40' })}
+                            ${renderOutputCard('Efficiency ($\eta$)', state.smResults.Eff, '%', { border: 'border-blue-500', bg: 'bg-blue-900/40' })}
                         </div>
                     </div>
-                `;
-            };
+                    <div class="mt-8 flex space-x-4">
+                        <button onclick="calculateGeneral()" class="flex-1 px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-300 shadow-lg">
+                            Calculate Results
+                        </button>
+                        <button onclick="handleSmClear('Fe_gen')" class="px-6 py-3 bg-gray-600 text-white font-bold rounded-xl hover:bg-gray-500 transition duration-200 focus:outline-none focus:ring-4 focus:ring-gray-400 shadow-lg">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            `;
+        };
 
-            // Initialize machine output divs
-            ['lever', 'wheel-axle', 'pulley', 'inclined-plane', 'wedge', 'screw'].forEach(machine => {
-                document.getElementById(`${machine}-outputs`).innerHTML = createOutputHTML(machine);
-            });
+        const renderMachineSpecificContent = (config) => {
+            const prefix = config.prefix;
+            const tabKey = state.activeSmTab;
 
-
-            // --- Core Machine-Specific Calculation Logic ---
-
-            const calculateMachineSpecific = (machine) => {
-                clearMessage(machineMessageBox);
-
-                // --- 1. Get Inputs (IDs are unique but follow a pattern) ---
-                const machineInputs = {
-                    Fe: parseFloat(document.getElementById(`Fe_${machine.slice(0, 3)}`).value),
-                    Fr: parseFloat(document.getElementById(`Fr_${machine.slice(0, 3)}`).value),
-                    Eff: parseFloat(document.getElementById(`Eff_${machine.slice(0, 3)}`).value),
-                    // De and Dr (renamed for specific machines)
-                    Dim1: parseFloat(document.getElementById(`De_${machine.slice(0, 3)}`).value) || parseFloat(document.getElementById(`Ima_${machine.slice(0, 3)}`).value) || parseFloat(document.getElementById(`r_${machine.slice(0, 3)}`).value),
-                    Dim2: parseFloat(document.getElementById(`Dr_${machine.slice(0, 3)}`).value) || parseFloat(document.getElementById(`p_${machine.slice(0, 3)}`).value),
-                };
-
-                const v = machineInputs;
-                let calculatedIMA = NaN;
-                let AMA = NaN;
-                let calculatedValue = NaN;
-                let missingVariable = null;
-
-                // --- 2. Calculate IMA based on Machine Type ---
-                try {
-                    if (machine === 'lever' || machine === 'wheel-axle' || machine === 'inclined-plane' || machine === 'wedge') {
-                        // IMA = Dim1 / Dim2 (L_e/L_r, R_wheel/R_axle, L_incline/h, L_wedge/t)
-                        if (isNaN(v.Dim1) || isNaN(v.Dim2) || v.Dim2 === 0) {
-                            throw new Error('Please enter valid dimensions for IMA (must be non-zero).');
-                        }
-                        calculatedIMA = v.Dim1 / v.Dim2;
-                    } else if (machine === 'pulley') {
-                        // IMA = N (Number of Ropes)
-                        if (isNaN(v.Dim1) || v.Dim1 <= 0) {
-                            throw new Error('Please enter a valid number of supporting ropes (N > 0).');
-                        }
-                        calculatedIMA = v.Dim1;
-                    } else if (machine === 'screw') {
-                        // IMA = 2 * pi * r / p
-                        if (isNaN(v.Dim1) || isNaN(v.Dim2) || v.Dim2 === 0) {
-                            throw new Error('Please enter valid Effort Radius and Pitch (Pitch must be non-zero).');
-                        }
-                        calculatedIMA = (2 * Math.PI * v.Dim1) / v.Dim2;
-                    }
-                } catch (e) {
-                    showMessage(machineMessageBox, 'IMA Error: ' + e.message);
-                    return;
-                }
-
-                // --- 3. Identify and Solve for the Missing Force/Efficiency Variable ---
-                const variables = { Fe: v.Fe, Fr: v.Fr, Eff: v.Eff };
-                const definedCount = Object.keys(variables).filter(key => !isNaN(variables[key])).length;
-                
-                if (definedCount !== 2) {
-                    showMessage(machineMessageBox, 'Calculation Error: IMA is set, but you must enter **exactly two** of the three remaining variables ($F_e, F_r, \eta$). You entered ' + definedCount + '.');
-                    return;
-                }
-                
-                // Find the missing variable
-                const allVars = ['Fe', 'Fr', 'Eff'];
-                missingVariable = allVars.find(key => isNaN(variables[key]));
-
-                if (missingVariable === 'Fe') {
-                    // Solve for Fe: Fe = Fr / AMA -> Fe = Fr / (Eff/100 * IMA)
-                    AMA = (v.Eff / 100) * calculatedIMA;
-                    if (AMA === 0) throw new Error('AMA is zero. Cannot solve $F_e$.');
-                    calculatedValue = v.Fr / AMA;
-                    v.Fe = calculatedValue;
-
-                } else if (missingVariable === 'Fr') {
-                    // Solve for Fr: Fr = Fe * AMA -> Fr = Fe * (Eff/100 * IMA)
-                    AMA = (v.Eff / 100) * calculatedIMA;
-                    calculatedValue = v.Fe * AMA;
-                    v.Fr = calculatedValue;
-
-                } else if (missingVariable === 'Eff') {
-                    // Solve for Eff: Eff = (AMA / IMA) * 100
-                    AMA = v.Fr / v.Fe;
-                    calculatedValue = (AMA / calculatedIMA) * 100;
-                    v.Eff = calculatedValue;
-
-                } else {
-                    // Should be caught by definedCount check, but for safety
-                    showMessage(machineMessageBox, 'Logic Error: Could not isolate the single missing variable.');
-                    return;
-                }
-                
-                // --- 4. Final Output Calculations ---
-                
-                // Final AMA
-                const finalAMA = v.Fe === 0 ? Infinity : (v.Fr / v.Fe);
-                
-                // Final Efficiency
-                let finalEff = NaN;
-                if (calculatedIMA > 0 && calculatedIMA !== Infinity && finalAMA !== Infinity) {
-                    finalEff = (finalAMA / calculatedIMA) * 100;
-                }
-
-
-                // --- 5. Display Results ---
-                const outputMachineName = machine.replace(/-/g, '_');
-                const outputIDs = {
-                    missingName: document.getElementById(`output-missing-name-${outputMachineName}`),
-                    missingValue: document.getElementById(`output-missing-value-${outputMachineName}`),
-                    IMA: document.getElementById(`output-IMA-${outputMachineName}`),
-                    AMA: document.getElementById(`output-AMA-${outputMachineName}`),
-                    Efficiency: document.getElementById(`output-Efficiency-${outputMachineName}`),
-                };
-                
-                const missingNameMap = {
-                    Fe: 'Effort Force ($F_e$)',
-                    Fr: 'Resistance Force ($F_r$)',
-                    Eff: 'Efficiency ($\eta$)',
-                };
-
-                outputIDs.missingName.textContent = missingNameMap[missingVariable];
-                outputIDs.missingValue.textContent = formatResult(calculatedValue);
-                outputIDs.IMA.textContent = formatResult(calculatedIMA);
-                outputIDs.AMA.textContent = formatResult(finalAMA);
-                outputIDs.Efficiency.textContent = finalEff === Infinity ? 'Infinite' : (isNaN(finalEff) ? '--' : finalEff.toFixed(2) + ' %');
-
-                if (finalEff > 100) {
-                    showMessage(machineMessageBox, `Warning: Calculated efficiency is ${finalEff.toFixed(2)}%. This is physically impossible and indicates an error in your input forces or distances.`, false);
-                } else {
-                    showMessage(machineMessageBox, `Calculation successful!`, false);
-                }
-            };
+            const formulaDisplay = tabKey === 'lever' ? '<span class="formula-text">$IMA = L_e / L_r$</span>' 
+                : tabKey === 'wheel-axle' ? '<span class="formula-text">$IMA = R_{wheel} / R_{axle}$</span>' 
+                : tabKey === 'pulley' ? '<span class="formula-text">$IMA = N$ (Ropes)</span>'
+                : tabKey === 'inclined-plane' ? '<span class="formula-text">$IMA = L / h$</span>'
+                : tabKey === 'wedge' ? '<span class="formula-text">$IMA = L / t$</span>'
+                : tabKey === 'screw' ? '<span class="formula-text">$IMA = 2\\pi r / p$</span>'
+                : '';
             
-            // --- Event Listeners for Machine-Specific Tabs ---
-            document.getElementById('calculate-btn-machine').addEventListener('click', () => {
-                if (activeTab && activeTab !== 'general') {
-                    calculateMachineSpecific(activeTab);
-                }
-            });
+            const inputsHtml = [];
 
-            document.getElementById('clear-btn-machine').addEventListener('click', () => {
-                if (activeTab && activeTab !== 'general') {
-                    const inputs = document.querySelectorAll(`#content-${activeTab} .input-field`);
-                    inputs.forEach(input => input.value = '');
-                    // Clear outputs
-                    const machineName = activeTab.replace(/-/g, '_');
-                    const outputIDs = {
-                        missingName: document.getElementById(`output-missing-name-${machineName}`),
-                        missingValue: document.getElementById(`output-missing-value-${machineName}`),
-                        IMA: document.getElementById(`output-IMA-${machineName}`),
-                        AMA: document.getElementById(`output-AMA-${machineName}`),
-                        Efficiency: document.getElementById(`output-Efficiency-${machineName}`),
-                    };
-                    Object.values(outputIDs).forEach(el => el.textContent = '--');
-                    outputIDs.missingName.textContent = 'N/A';
-                    clearMessage(machineMessageBox);
-                }
-            });
+            // IMA Inputs
+            if (config.imaLabels.De) {
+                inputsHtml.push(`
+                    <div class="input-group">
+                        <label class="block text-sm text-gray-300 formula-text">${config.imaLabels.De}</label>
+                        <input type="text" value="${state.smInputs[`De_${prefix}`] || ''}" 
+                            data-key="De_${prefix}"
+                            oninput="handleSmInputChange(event, 'De_${prefix}')" placeholder="e.g. 5" class="input-field sm-input mt-1 w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-600 focus:border-indigo-500 focus:ring-indigo-500" />
+                    </div>
+                    <div class="input-group">
+                        <label class="block text-sm text-gray-300 formula-text">${config.imaLabels.Dr}</label>
+                        <input type="text" value="${state.smInputs[`Dr_${prefix}`] || ''}" 
+                            data-key="Dr_${prefix}"
+                            oninput="handleSmInputChange(event, 'Dr_${prefix}')" placeholder="e.g. 1" class="input-field sm-input mt-1 w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-600 focus:border-indigo-500 focus:ring-indigo-500" />
+                    </div>
+                `);
+            } else if (config.imaLabels.Ima) {
+                inputsHtml.push(`
+                    <div class="input-group col-span-2">
+                        <label class="block text-sm text-gray-300 formula-text">${config.imaLabels.Ima}</label>
+                        <input type="text" value="${state.smInputs.Ima_pul || ''}" 
+                            data-key="Ima_pul"
+                            oninput="handleSmInputChange(event, 'Ima_pul')" placeholder="e.g. 4" class="input-field sm-input mt-1 w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-600 focus:border-indigo-500 focus:ring-indigo-500" />
+                    </div>
+                `);
+            } else if (config.imaLabels.r) {
+                inputsHtml.push(`
+                    <div class="input-group">
+                        <label class="block text-sm text-gray-300 formula-text">${config.imaLabels.r}</label>
+                        <input type="text" value="${state.smInputs.r_scr || ''}" 
+                            data-key="r_scr"
+                            oninput="handleSmInputChange(event, 'r_scr')" placeholder="e.g. 0.2" class="input-field sm-input mt-1 w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-600 focus:border-indigo-500 focus:ring-indigo-500" />
+                    </div>
+                    <div class="input-group">
+                        <label class="block text-sm text-gray-300 formula-text">${config.imaLabels.p}</label>
+                        <input type="text" value="${state.smInputs.p_scr || ''}" 
+                            data-key="p_scr"
+                            oninput="handleSmInputChange(event, 'p_scr')" placeholder="e.g. 0.005" class="input-field sm-input mt-1 w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-600 focus:border-indigo-500 focus:ring-indigo-500" />
+                    </div>
+                `);
+            }
 
+            // AMA/Efficiency Inputs (Standard)
+            inputsHtml.push(`
+                <div class="input-group">
+                    <label class="block text-sm text-gray-300 formula-text">Effort Force ($F_e$)</label>
+                    <input type="text" value="${state.smInputs[`Fe_${prefix}`] || ''}" 
+                        data-key="Fe_${prefix}"
+                        oninput="handleSmInputChange(event, 'Fe_${prefix}')" placeholder="e.g. 100" class="input-field sm-input mt-1 w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-600 focus:border-indigo-500 focus:ring-indigo-500" />
+                </div>
+                <div class="input-group">
+                    <label class="block text-sm text-gray-300 formula-text">Resistance Force ($F_r$)</label>
+                    <input type="text" value="${state.smInputs[`Fr_${prefix}`] || ''}" 
+                        data-key="Fr_${prefix}"
+                        oninput="handleSmInputChange(event, 'Fr_${prefix}')" placeholder="e.g. 400" class="input-field sm-input mt-1 w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-600 focus:border-indigo-500 focus:ring-indigo-500" />
+                </div>
+                <div class="input-group col-span-2">
+                    <label class="block text-sm text-gray-300 formula-text">Efficiency ($\eta$)</label>
+                    <input type="text" value="${state.smInputs[`Eff_${prefix}`] || ''}" 
+                        data-key="Eff_${prefix}"
+                        oninput="handleSmInputChange(event, 'Eff_${prefix}')" placeholder="e.g. 75 (for 75%)" class="input-field sm-input mt-1 w-full p-3 rounded-xl bg-gray-800 text-white border border-gray-600 focus:border-indigo-500 focus:ring-indigo-500" />
+                    <p class="text-xs text-gray-500 mt-1">Unit: Percentage (0-100) (Enter numbers only)</p>
+                </div>
+            `);
 
-            // --- General Calculator Logic (Copied from previous step) ---
-            
-            // Get all input and output elements for General Solver
-            const inputsGen = {
-                Fe: document.getElementById('Fe_gen'),
-                De: document.getElementById('De_gen'),
-                Fr: document.getElementById('Fr_gen'),
-                Dr: document.getElementById('Dr_gen'),
-                Eff: document.getElementById('Eff_gen'), // Efficiency input
-            };
+            return `
+                <div>
+                    <h3 class="text-xl font-bold text-indigo-400 mb-4">${tabLabels[tabKey]} Analysis (${formulaDisplay})</h3>
+                    <p class="text-xs text-gray-500 mb-4">(Enter numbers only in the input fields.)</p>
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <div class="grid grid-cols-2 gap-6">
+                            ${inputsHtml.join('')}
+                        </div>
+                        <div class="space-y-4">
+                            ${state.smResults.solvedName ? renderOutputCard('Solved Value', state.smResults.solvedValue, state.smResults.solvedUnit, { border: 'border-yellow-500', bg: 'bg-yellow-900/40' }) : ''}
+                            ${renderOutputCard('Ideal Mechanical Advantage (IMA)', state.smResults.IMA, '', { border: 'border-indigo-500', bg: 'bg-indigo-900/40' })}
+                            ${renderOutputCard('Actual Mechanical Advantage (AMA)', state.smResults.AMA, '', { border: 'border-green-500', bg: 'bg-green-900/40' })}
+                            ${renderOutputCard('Efficiency ($\eta$)', state.smResults.Eff, '%', { border: 'border-blue-500', bg: 'bg-blue-900/40' })}
+                        </div>
+                    </div>
+                    <div class="mt-8 flex space-x-4">
+                        <button onclick="calculateMachine()" class="flex-1 px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-300 shadow-lg">
+                            Calculate Machine Results
+                        </button>
+                        <button onclick="handleSmClear('${config.prefix}')" class="px-6 py-3 bg-gray-600 text-white font-bold rounded-xl hover:bg-gray-500 transition duration-200 focus:outline-none focus:ring-4 focus:ring-gray-400 shadow-lg">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            `;
+        };
 
-            const outputNamesGen = {
-                Fe: 'Effort Force ($F_e$)',
-                De: 'Effort Distance ($D_e$)',
-                Fr: 'Resistance Force ($F_r$)',
-                Dr: 'Resistance Distance ($D_r$)',
-                Eff: 'Efficiency ($\eta$)',
-            };
+        const renderSimpleMachineView = (resetTab = true) => {
+            if (resetTab) state.activeSmTab = 'general';
 
-            const outputsGen = {
-                missingName: document.getElementById('output-missing-name-gen'),
-                missingValue: document.getElementById('output-missing-value-gen'),
-                IMA: document.getElementById('output-IMA-gen'),
-                AMA: document.getElementById('output-AMA-gen'),
-                Efficiency: document.getElementById('output-Efficiency-gen'),
-            };
+            const tabsHtml = Object.keys(tabLabels).map(key => `
+                <button
+                    data-tab-key="${key}"
+                    class="sm-tab p-3 rounded-t-lg font-semibold transition-all mr-2 whitespace-nowrap text-lg
+                    ${state.activeSmTab === key ? 'bg-gray-700 text-indigo-400 border-b-2 border-indigo-400' : 'text-gray-400 hover:bg-gray-700'}
+                    "
+                >
+                    ${tabLabels[key]}
+                </button>
+            `).join('');
 
-            const calculateBtnGen = document.getElementById('calculate-btn-gen');
-            const clearBtnGen = document.getElementById('clear-btn-gen');
+            const contentHtml = state.activeSmTab === 'general' 
+                ? renderGeneralSmContent()
+                : renderMachineSpecificContent(MachineConfigs[state.activeSmTab]);
 
-            const clearOutputsGen = () => {
-                outputsGen.missingName.textContent = 'N/A';
-                outputsGen.missingValue.textContent = '--';
-                outputsGen.IMA.textContent = '--';
-                outputsGen.AMA.textContent = '--';
-                outputsGen.Efficiency.textContent = '--';
-                clearMessage(messageBoxGen);
-            };
+            document.getElementById('app-container').innerHTML = `
+                <div class="p-4 sm:p-8 flex flex-col items-center min-h-screen">
+                    <div class="w-full max-w-4xl flex justify-between items-center mb-6">
+                        <h1 class="text-3xl font-extrabold text-white flex items-center">
+                            <i data-lucide="hard-hat" class="w-7 h-7 mr-3 text-indigo-400"></i>
+                            Machine Analysis Hub
+                        </h1>
+                        <button
+                            data-view="home"
+                            class="nav-button flex items-center text-sm font-medium text-gray-300 hover:text-white transition-colors bg-gray-700/50 p-3 rounded-xl shadow-md"
+                        >
+                            <i data-lucide="home" class="w-4 h-4 mr-1"></i>
+                            Home
+                        </button>
+                    </div>
 
-            const calculateGeneral = () => {
-                clearOutputsGen(); 
+                    <div class="w-full max-w-4xl bg-gray-800 p-6 rounded-3xl shadow-2xl">
+                        
+                        <!-- Tab Navigation -->
+                        <div class="flex border-b border-gray-700 mb-6 overflow-x-auto" id="sm-tabs">
+                            ${tabsHtml}
+                        </div>
 
-                // 1. Collect and validate input values
-                const rawValues = {
-                    Fe: parseFloat(inputsGen.Fe.value),
-                    De: parseFloat(inputsGen.De.value),
-                    Fr: parseFloat(inputsGen.Fr.value),
-                    Dr: parseFloat(inputsGen.Dr.value),
-                    Eff: parseFloat(inputsGen.Eff.value), // Efficiency in percentage (0-100)
-                };
-
-                const allVars = Object.keys(rawValues);
-                const definedVariables = allVars.filter(key => !isNaN(rawValues[key]) && rawValues[key] !== null);
-                const missingVariable = allVars.find(key => isNaN(rawValues[key]) || rawValues[key] === null);
-
-                if (definedVariables.length !== 4) {
-                    showMessage(messageBoxGen, 'Please enter **exactly four** of the five available values ($F_e, D_e, F_r, D_r, \eta$). You entered ' + definedVariables.length + '.');
-                    return;
-                }
-                
-                // Efficiency check
-                if (!isNaN(rawValues.Eff) && (rawValues.Eff > 100 || rawValues.Eff < 0)) {
-                    showMessage(messageBoxGen, 'Efficiency ($\eta$) must be between 0 and 100.', true);
-                    return;
-                }
-                
-                let calculatedValue = NaN;
-                let AMA = NaN;
-                let IMA = NaN;
-                const v = rawValues; // Shorthand for values
-                
-                try {
-                    // A. Calculate IMA (requires D_e and D_r)
-                    if (!isNaN(v.De) && !isNaN(v.Dr)) {
-                        IMA = v.Dr === 0 ? Infinity : v.De / v.Dr;
-                    }
-
-                    // B. Calculate AMA (requires F_r and F_e)
-                    if (!isNaN(v.Fr) && !isNaN(v.Fe)) {
-                        AMA = v.Fe === 0 ? Infinity : v.Fr / v.Fe;
-                    }
-
-                    // C. Solve for the Missing Variable 
-                    if (missingVariable === 'Eff') {
-                        // Case 1: Solve for Efficiency (requires AMA and IMA)
-                        if (IMA !== Infinity && IMA !== 0 && !isNaN(AMA)) {
-                            calculatedValue = (AMA / IMA) * 100;
-                        } else {
-                            throw new Error('To calculate Efficiency, $D_e$ and $D_r$ must be provided, and IMA cannot be zero or infinite.');
-                        }
-                    } else if (missingVariable === 'Fe' || missingVariable === 'Fr') {
-                        // Case 2: Solve for a Force
-                        if (!isNaN(v.Eff) && !isNaN(IMA) && IMA !== Infinity && IMA !== 0) {
-                            // Use Efficieny and IMA to find the required AMA
-                            AMA = (v.Eff / 100) * IMA;
+                        <!-- Content -->
+                        <div class="p-4 bg-gray-700 rounded-xl">
+                            <!-- Error Message Box -->
+                            ${state.smError ? `
+                                <div class="p-3 mb-4 rounded-xl text-sm text-red-300 bg-red-800/50 border border-red-700" role="alert">
+                                    ${state.smError}
+                                </div>
+                            ` : ''}
                             
-                            if (missingVariable === 'Fe') {
-                                // Solve for Fe: Fe = Fr / AMA
-                                if (AMA === 0) throw new Error('Cannot solve $F_e$: Calculated AMA is zero. Check your efficiency or distance values.');
-                                calculatedValue = v.Fr / AMA;
-                                v.Fe = calculatedValue; 
-                            } else { // missingVariable === 'Fr'
-                                // Solve for Fr: Fr = Fe * AMA
-                                calculatedValue = v.Fe * AMA;
-                                v.Fr = calculatedValue; 
-                            }
-                        } else if (missingVariable === 'Fe' && !isNaN(v.Fr) && !isNaN(v.De) && !isNaN(v.Dr)) {
-                            // If Eff is missing, use work principle
-                            if (v.De === 0) throw new Error('Cannot solve $F_e$: Effort Distance is zero.');
-                            v.Fe = v.Fr * v.Dr / v.De;
-                            AMA = v.Fr / v.Fe;
-                            calculatedValue = v.Fe;
-                        } else if (missingVariable === 'Fr' && !isNaN(v.Fe) && !isNaN(v.De) && !isNaN(v.Dr)) {
-                             // If Eff is missing, use work principle
-                            v.Fr = v.Fe * v.De / v.Dr;
-                            AMA = v.Fr / v.Fe;
-                            calculatedValue = v.Fr;
-                        } else {
-                             throw new Error('To solve for Force ($F_e$ or $F_r$), you need $\eta$ and IMA (from $D_e, D_r$) OR the other Force and $D_e, D_r$.');
-                        }
-                    } else if (missingVariable === 'De' || missingVariable === 'Dr') {
-                         // Case 3: Solve for a Distance
-                        if (!isNaN(v.Eff) && !isNaN(AMA) && AMA !== Infinity) {
-                            // Use Efficiency and AMA to find the required IMA
-                            if (v.Eff === 0) throw new Error('Cannot solve Distance: Efficiency ($\eta$) cannot be zero.');
-                            IMA = AMA / (v.Eff / 100);
+                            ${contentHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            addNavListeners();
+            addSmTabListeners();
+        };
 
-                            if (missingVariable === 'De') {
-                                // Solve for De: De = IMA * Dr
-                                calculatedValue = IMA * v.Dr;
-                                v.De = calculatedValue; 
-                            } else { // missingVariable === 'Dr'
-                                // Solve for Dr: Dr = De / IMA
-                                if (IMA === 0) throw new Error('Cannot solve $D_r$: Calculated IMA is zero. Check your efficiency or force values.');
-                                calculatedValue = v.De / IMA;
-                                v.Dr = calculatedValue; 
-                            }
-                        } else if (missingVariable === 'De' && !isNaN(v.Fr) && !isNaN(v.Fe) && !isNaN(v.Dr)) {
-                            // If Eff is missing, use work principle
-                            v.De = v.Fr * v.Dr / v.Fe;
-                            IMA = v.De / v.Dr;
-                            calculatedValue = v.De;
-                        } else if (missingVariable === 'Dr' && !isNaN(v.Fr) && !isNaN(v.Fe) && !isNaN(v.De)) {
-                            // If Eff is missing, use work principle
-                            if (v.Fr === 0) throw new Error('Cannot solve $D_r$: Resistance Force is zero.');
-                            v.Dr = v.Fe * v.De / v.Fr;
-                            IMA = v.De / v.Dr;
-                            calculatedValue = v.Dr;
-                        } else {
-                            throw new Error('To solve for Distance ($D_e$ or $D_r$), you need $\eta$ and AMA (from $F_e, F_r$) OR the other Distance and $F_e, F_r$.');
-                        }
+        const renderCalculatorView = (resetMode = true) => {
+            if (resetMode) {
+                state.calcMode = 'scientific';
+                state.calcError = '';
+            }
+
+            const scientificButtons = [
+                { label: '(', value: '(', className: 'bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400' },
+                { label: ')', value: ')', className: 'bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400' },
+                { label: 'sin', value: 'sin(', className: 'bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400' },
+                { label: 'cos', value: 'cos(', className: 'bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400' },
+                { label: 'tan', value: 'tan(', className: 'bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400' },
+                { label: 'log', value: 'log(', className: 'bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400' },
+                { label: 'exp', value: 'exp(', className: 'bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400' },
+                { label: 'sqrt', value: 'sqrt(', className: 'bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400' },
+                { label: 'x^y', value: '**', className: 'bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400' },
+                { label: 'π', value: 'Math.PI', className: 'bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400' },
+            ];
+            
+            const mainButtons = [
+                { label: 'C', value: 'clear', className: 'col-span-2 bg-red-600/20 hover:bg-red-600/30 text-red-300' },
+                { label: '<i data-lucide="redo-2" class="w-5 h-5"></i>', value: 'del', className: 'bg-gray-700 hover:bg-gray-600 text-gray-300' },
+                { label: '<i data-lucide="divide" class="w-6 h-6"></i>', value: '/', className: 'bg-indigo-600 hover:bg-indigo-700/80 text-white' },
+                { label: '7', value: '7', className: 'bg-gray-800 hover:bg-gray-700' },
+                { label: '8', value: '8', className: 'bg-gray-800 hover:bg-gray-700' },
+                { label: '9', value: '9', className: 'bg-gray-800 hover:bg-gray-700' },
+                { label: '<i data-lucide="x" class="w-6 h-6"></i>', value: '*', className: 'bg-indigo-600 hover:bg-indigo-700/80 text-white' },
+                { label: '4', value: '4', className: 'bg-gray-800 hover:bg-gray-700' },
+                { label: '5', value: '5', className: 'bg-gray-800 hover:bg-gray-700' },
+                { label: '6', value: '6', className: 'bg-gray-800 hover:bg-gray-700' },
+                { label: '<i data-lucide="minus" class="w-6 h-6"></i>', value: '-', className: 'bg-indigo-600 hover:bg-indigo-700/80 text-white' },
+                { label: '1', value: '1', className: 'bg-gray-800 hover:bg-gray-700' },
+                { label: '2', value: '2', className: 'bg-gray-800 hover:bg-gray-700' },
+                { label: '3', value: '3', className: 'bg-gray-800 hover:bg-gray-700' },
+                { label: '<i data-lucide="plus" class="w-6 h-6"></i>', value: '+', className: 'bg-indigo-600 hover:bg-indigo-700/80 text-white' },
+                { label: '0', value: '0', className: 'col-span-2 bg-gray-800 hover:bg-gray-700' },
+                { label: '.', value: '.', className: 'bg-gray-800 hover:bg-gray-700' },
+                { label: '<i data-lucide="equal" class="w-6 h-6"></i>', value: 'calculate', className: 'bg-green-600 hover:bg-green-700 text-white' },
+            ];
+
+            const scientificPad = `
+                <div class="grid grid-cols-5 gap-3 mb-3">
+                    ${scientificButtons.map((btn) => `
+                        <button
+                            data-value="${btn.value}"
+                            onclick="handleCalcClick('${btn.value}')"
+                            class="calc-button p-3 rounded-xl text-white font-medium text-lg transition-all
+                                shadow-md active:shadow-inner active:bg-indigo-600/30 ${btn.className}"
+                        >
+                            ${btn.label}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <div class="grid grid-cols-4 gap-3">
+                    ${mainButtons.map((btn) => `
+                        <button
+                            data-value="${btn.value}"
+                            onclick="handleCalcClick('${btn.value}')"
+                            class="calc-button p-4 rounded-xl text-white font-bold text-2xl transition-all
+                                shadow-md active:shadow-inner active:translate-y-0.5 ${btn.className}"
+                        >
+                            ${btn.label}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+
+            const display = state.calcMode === 'scientific' ? `
+                <div class="mb-6 bg-gray-900 p-4 rounded-2xl text-right overflow-hidden shadow-inner border border-gray-700">
+                    <p class="text-sm text-red-400 h-6 mb-1">${state.calcError}</p>
+                    <div class="min-h-[2.5rem]">
+                        <p class="text-gray-400 text-lg break-all">${state.calcInput || '0'}</p>
+                    </div>
+                    <div class="min-h-[3rem]">
+                        <p class="text-white text-5xl font-light break-all">${state.calcResult || ''}</p>
+                    </div>
+                </div>
+                ${scientificPad}
+            ` : `
+                <div class="mb-6">
+                    <div class="flex mb-4 items-center bg-gray-900 p-3 rounded-xl shadow-inner border border-gray-700">
+                        <span class="text-xl text-white font-mono mr-2">f(x) =</span>
+                        <input
+                            type="text"
+                            value="${state.functionInput}"
+                            oninput="state.functionInput = this.value; drawGraph();"
+                            placeholder="e.g. sin(x) + x/2"
+                            class="flex-grow bg-transparent text-white focus:outline-none placeholder-gray-500 font-mono text-xl"
+                        />
+                    </div>
+                    ${state.calcError && `<p class="text-sm text-red-400 mb-2 text-center">${state.calcError}</p>`}
+                    <div class="border border-gray-700 rounded-xl overflow-hidden shadow-lg">
+                        <canvas id="graphing-canvas" class="w-full bg-gray-900"></canvas>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2 text-center">Default graphing range: X/Y from -10 to 10.</p>
+                </div>
+            `;
+
+            document.getElementById('app-container').innerHTML = `
+                <div class="p-4 sm:p-8 flex flex-col items-center min-h-screen bg-gray-900">
+                    <div class="w-full max-w-4xl flex justify-between items-center mb-6">
+                        <h1 class="text-3xl font-extrabold text-white flex items-center">
+                            <i data-lucide="calculator" class="w-7 h-7 mr-3 text-indigo-400"></i>
+                            Calculator
+                        </h1>
+                        <button
+                            data-view="home"
+                            class="nav-button flex items-center text-sm font-medium text-gray-300 hover:text-white transition-colors bg-gray-700/50 p-3 rounded-xl shadow-md"
+                        >
+                            <i data-lucide="home" class="w-4 h-4 mr-1"></i>
+                            Home
+                        </button>
+                    </div>
+
+                    <div class="w-full max-w-3xl bg-gray-800 p-6 rounded-3xl shadow-2xl">
+                        <!-- Angle Mode Indicator -->
+                        <p class="text-xs font-semibold text-center mb-4 p-1 rounded-full ${state.angleMode === 'degrees' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}">
+                            Angle Mode: ${state.angleMode.toUpperCase()}
+                        </p>
+
+                        <!-- Mode Selector -->
+                        <div class="flex justify-center mb-6 space-x-4">
+                            <button
+                                onclick="state.calcMode = 'scientific'; renderCalculatorView(false);"
+                                class="
+                                px-4 py-2 rounded-xl font-semibold transition-all flex items-center shadow-lg
+                                ${state.calcMode === 'scientific' ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}
+                                "
+                            >
+                                <i data-lucide="calculator" class="w-5 h-5 mr-2"></i> Scientific
+                            </button>
+                            <button
+                                onclick="state.calcMode = 'graphing'; renderCalculatorView(false);"
+                                class="
+                                px-4 py-2 rounded-xl font-semibold transition-all flex items-center shadow-lg
+                                ${state.calcMode === 'graphing' ? 'bg-indigo-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}
+                                "
+                            >
+                                <i data-lucide="line-chart" class="w-5 h-5 mr-2"></i> Graphing
+                            </button>
+                        </div>
+                        
+                        ${display}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            addNavListeners();
+
+            if (state.calcMode === 'graphing') {
+                // Wait for the canvas to be in the DOM, then draw
+                setTimeout(drawGraph, 0); 
+                window.onresize = () => state.calcMode === 'graphing' && drawGraph();
+            } else {
+                window.onresize = null;
+            }
+        };
+
+        const renderSettingsView = () => {
+            const precisionOptions = [2, 4, 6, 8];
+            const angleModeOptions = ['radians', 'degrees'];
+
+            const precisionButtons = precisionOptions.map(opt => `
+                <button
+                    onclick="state.precision = ${opt}; renderSettingsView();"
+                    class="flex-1 p-4 rounded-xl font-bold transition-all shadow-md
+                    ${state.precision === opt 
+                        ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' 
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }
+                    "
+                >
+                    ${opt} Decimal Places
+                    ${state.precision === opt ? '<i data-lucide="check" class="w-4 h-4 ml-2 inline-block"></i>' : ''}
+                </button>
+            `).join('');
 
-                    // --- STEP 3: Final Calculations for Output Fields ---
-                    
-                    // Final IMA
-                    const finalIMA = v.Dr === 0 ? 'Infinite' : (v.De / v.Dr);
-                    
-                    // Final AMA
-                    const finalAMA = v.Fe === 0 ? 'Infinite' : (v.Fr / v.Fe);
-                    
-                    // Final Efficiency
-                    const imaValue = parseFloat(formatResult(finalIMA)) || finalIMA;
-                    const amaValue = parseFloat(formatResult(finalAMA)) || finalAMA;
-                    let finalEff = '--';
-                    if (!isNaN(amaValue) && amaValue !== Infinity && !isNaN(imaValue) && imaValue > 0 && imaValue !== Infinity) {
-                        finalEff = ((amaValue / imaValue) * 100).toFixed(2) + ' %';
-                    } else if (missingVariable === 'Eff' && !isNaN(calculatedValue)) {
-                        finalEff = calculatedValue.toFixed(2) + ' %';
+            const angleModeButtons = angleModeOptions.map(mode => `
+                <button
+                    onclick="state.angleMode = '${mode}'; renderSettingsView();"
+                    class="flex-1 p-4 rounded-xl font-bold capitalize transition-all shadow-md
+                    ${state.angleMode === mode 
+                        ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' 
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }
+                    "
+                >
+                    ${mode}
+                    ${state.angleMode === mode ? '<i data-lucide="check" class="w-4 h-4 ml-2 inline-block"></i>' : ''}
+                </button>
+            `).join('');
 
+            document.getElementById('app-container').innerHTML = `
+                <div class="p-4 sm:p-8 flex flex-col items-center min-h-screen">
+                    <div class="w-full max-w-4xl flex justify-between items-center mb-8">
+                        <h1 class="text-3xl font-extrabold text-white flex items-center">
+                            <i data-lucide="settings" class="w-7 h-7 mr-3 text-emerald-400"></i>
+                            Application Settings
+                        </h1>
+                        <button
+                            data-view="home"
+                            class="nav-button flex items-center text-sm font-medium text-gray-300 hover:text-white transition-colors bg-gray-700/50 p-3 rounded-xl shadow-md"
+                        >
+                            <i data-lucide="home" class="w-4 h-4 mr-1"></i>
+                            Home
+                        </button>
+                    </div>
 
-                    // 4. Display the missing variable result
-                    outputsGen.missingName.textContent = outputNamesGen[missingVariable];
-                    outputsGen.missingValue.textContent = formatResult(calculatedValue);
-                    outputsGen.IMA.textContent = formatResult(finalIMA);
-                    outputsGen.AMA.textContent = formatResult(finalAMA);
-                    outputsGen.Efficiency.textContent = finalEff;
-                    
-                    if (finalEff !== '--' && parseFloat(finalEff) > 100) {
-                         showMessage(messageBoxGen, `Warning: Calculated efficiency is ${finalEff}. An efficiency greater than 100% indicates that the ideal work principle ($W_{in} \ge W_{out}$) was violated by the input forces/distances.`, false);
-                    } else {
-                        showMessage(messageBoxGen, `Calculation successful.`, false);
+                    <div class="w-full max-w-2xl bg-gray-800 p-6 rounded-3xl shadow-2xl space-y-8">
+                        
+                        <!-- Calculation Precision Setting -->
+                        <div>
+                            <h2 class="text-xl font-bold text-indigo-400 mb-4 flex items-center">
+                                <i data-lucide="chevron-right" class="w-5 h-5 mr-2"></i> Calculation Precision
+                            </h2>
+                            <p class="text-sm text-gray-400 mb-4">
+                                Sets the number of decimal places for all displayed results in the Calculator and Machine Hub.
+                            </p>
+                            <div class="flex space-x-4">
+                                ${precisionButtons}
+                            </div>
+                        </div>
+
+                        <!-- Angle Mode Setting -->
+                        <div>
+                            <h2 class="text-xl font-bold text-indigo-400 mb-4 flex items-center">
+                                <i data-lucide="chevron-right" class="w-5 h-5 mr-2"></i> Angle Mode
+                            </h2>
+                            <p class="text-sm text-gray-400 mb-4">
+                                Defines the unit used for trigonometric functions (sin, cos, tan) in the Calculator.
+                            </p>
+                            <div class="flex space-x-4">
+                                ${angleModeButtons}
+                            </div>
+                        </div>
+
+                        <!-- Current Settings Summary -->
+                        <div class="pt-4 border-t border-gray-700">
+                            <h3 class="text-lg font-semibold text-gray-300 mb-2">Current Settings:</h3>
+                            <p class="text-sm text-gray-400">
+                                Precision: <span class="text-white font-mono">${state.precision}</span> | 
+                                Angle Mode: <span class="text-white font-mono capitalize">${state.angleMode}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            addNavListeners();
+        };
+
+        const renderApp = () => {
+            // Remove previous event listeners
+            window.onresize = null;
+
+            switch (state.view) {
+                case 'simple-machine':
+                    renderSimpleMachineView(false); // don't reset tab on re-render
+                    break;
+                case 'calculator':
+                    renderCalculatorView(false);
+                    break;
+                case 'settings':
+                    renderSettingsView();
+                    break;
+                case 'home':
+                default:
+                    renderHomeView();
+                    break;
+            }
+        };
+
+        // --- Event Listener Management ---
+
+        const addNavListeners = () => {
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.onclick = (e) => {
+                    const newView = button.getAttribute('data-view');
+                    if (newView) {
+                        state.view = newView;
+                        renderApp();
                     }
-
-                } catch (e) {
-                    showMessage(messageBoxGen, 'Calculation Error: ' + e.message);
-                    return;
-                }
-            };
-
-            // Event Listeners for General Calculator
-            calculateBtnGen.addEventListener('click', calculateGeneral);
-            clearBtnGen.addEventListener('click', () => {
-                // Clear inputs and outputs
-                Object.values(inputsGen).forEach(input => input.value = '');
-                clearOutputsGen();
+                };
             });
+        };
 
-        });
+        const addSmTabListeners = () => {
+            document.querySelectorAll('.sm-tab').forEach(button => {
+                button.onclick = (e) => {
+                    const newTab = button.getAttribute('data-tab-key');
+                    if (newTab) {
+                        state.activeSmTab = newTab;
+                        state.smResults = {}; // Clear results on tab switch
+                        state.smError = '';
+                        // Re-render the current view to show new tab content
+                        renderSimpleMachineView(false); 
+                    }
+                };
+            });
+        };
+
+        // Initial render on page load
+        document.addEventListener('DOMContentLoaded', renderApp);
+
     </script>
 </body>
 </html>
